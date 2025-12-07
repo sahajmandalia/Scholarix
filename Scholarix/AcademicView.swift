@@ -184,6 +184,7 @@ struct AcademicView: View {
                 .background(Material.regular)
                 .cornerRadius(25)
                 .padding()
+                .padding(.bottom, 8)
             } else {
                 ZStack {
                     HStack {
@@ -209,11 +210,9 @@ struct AcademicView: View {
                     }
                 }
                 .padding()
+                .padding(.bottom, 8)
             }
-            // Ensure padding is applied to lift the bar off the bottom edge
-            .padding(.bottom, 8)
         }
-        // Apply the Material background to the VStack containing the buttons
         .background(Material.bar)
     }
 }
