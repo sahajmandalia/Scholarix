@@ -4,67 +4,102 @@ import FirebaseAuth
 struct SideMenuView: View {
     @EnvironmentObject var menuManager: MenuManager
     
+    var userEmail: String {
+        Auth.auth().currentUser?.email ?? "Student"
+    }
+    
     var body: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 30) {
+        HStack(alignment: .top) {
+            VStack(alignment: .leading, spacing: 0) {
                 // --- Header ---
-                VStack(alignment: .leading) {
-                    Image(systemName: "person.circle.fill")
-                        .font(.system(size: 60))
-                        .foregroundColor(.blue)
+                VStack(alignment: .leading, spacing: 12) {
+                    ZStack {
+                        Circle()
+                            .fill(.white)
+                            .frame(width: 60, height: 60)
+                        Text(String(userEmail.prefix(1)).uppercased())
+                            .font(.title)
+                            .fontWeight(.bold)
+                            .foregroundColor(.blue)
+                    }
                     
-                    Text(Auth.auth().currentUser?.email ?? "User")
-                        .font(.headline)
-                        .foregroundColor(.primary)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Hello,")
+                            .font(.caption)
+                            .foregroundColor(.white.opacity(0.8))
+                        Text(userEmail)
+                            .font(.headline)
+                            .foregroundColor(.white)
+                            .lineLimit(1)
+                    }
                 }
-                .padding(.top, 50)
+                .padding(.top, 60)
+                .padding(.bottom, 30)
+                .padding(.horizontal)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(LinearGradient(colors: [.blue, .purple], startPoint: .topLeading, endPoint: .bottomTrailing))
                 
-                Divider()
-                
-                // --- Menu Options ---
-                
-                Button(action: { menuManager.close() }) {
-                    Label("Profile", systemImage: "person.fill")
-                        .font(.headline).foregroundColor(.primary)
-                }
-                
-                Button(action: {
-                    // --- FIX: Use the manager function to switch views ---
-                    menuManager.openSettings()
-                }) {
-                    Label("Settings", systemImage: "gearshape.fill")
-                        .font(.headline).foregroundColor(.primary)
-                }
-                
-                Button(action: { menuManager.close() }) {
-                    Label("About", systemImage: "info.circle.fill")
-                        .font(.headline).foregroundColor(.primary)
+                // --- Menu Items ---
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 10) {
+                        MenuRow(icon: "person.fill", title: "Profile") { menuManager.close() }
+                        MenuRow(icon: "gearshape.fill", title: "Settings") { menuManager.openSettings() }
+                        MenuRow(icon: "doc.text.fill", title: "Resume") { menuManager.close() } // Navigates to Extracurriculars tab via main view logic if needed, or just closes
+                        MenuRow(icon: "questionmark.circle.fill", title: "Help") { menuManager.close() }
+                        
+                        Divider().padding(.vertical)
+                        
+                        Button(action: {
+                            try? Auth.auth().signOut()
+                            menuManager.close()
+                        }) {
+                            HStack(spacing: 12) {
+                                Image(systemName: "arrow.left.square.fill")
+                                    .foregroundColor(.red)
+                                Text("Log Out")
+                                    .foregroundColor(.red)
+                            }
+                            .padding()
+                        }
+                    }
+                    .padding(.top)
                 }
                 
                 Spacer()
                 
-                Button(action: {
-                    try? Auth.auth().signOut()
-                    menuManager.close()
-                }) {
-                    Label("Log Out", systemImage: "arrow.left.square.fill")
-                        .font(.headline).foregroundColor(.red)
-                }
-                .padding(.bottom, 50)
+                Text("Scholarix v1.0")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                    .padding()
             }
-            .padding(.horizontal)
-            .frame(maxWidth: 270)
-            .background(Color(UIColor.secondarySystemBackground))
+            .frame(width: 270)
+            .background(Color(.systemBackground))
             .edgesIgnoringSafeArea(.vertical)
             
             Spacer()
         }
-        // Note: We removed the .fullScreenCover modifier from here.
-        // The ContentView now handles showing the Settings view.
     }
 }
 
-#Preview {
-    SideMenuView()
-        .environmentObject(MenuManager())
+struct MenuRow: View {
+    let icon: String
+    let title: String
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 12) {
+                Image(systemName: icon)
+                    .font(.body)
+                    .frame(width: 24)
+                    .foregroundColor(.gray)
+                Text(title)
+                    .font(.body)
+                    .foregroundColor(.primary)
+                Spacer()
+            }
+            .padding(.horizontal)
+            .padding(.vertical, 10)
+        }
+    }
 }

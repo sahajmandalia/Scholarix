@@ -8,6 +8,7 @@ struct SignUpView: View {
     @State private var password = ""
     @State private var confirmPassword = ""
     
+    // Error States
     @State private var emailError: String? = nil
     @State private var passwordError: String? = nil
     @State private var confirmPasswordError: String? = nil
@@ -18,14 +19,15 @@ struct SignUpView: View {
         VStack(spacing: 20) {
             Spacer()
             
-            Image("AppLogo")
+            // --- Logo ---
+            Image("AppLogo") // Ensure this matches your asset name
                 .renderingMode(.template)
                 .resizable()
                 .scaledToFit()
-                .frame(width: 70, height: 70)
+                .frame(width: 80, height: 80)
                 .foregroundColor(.blue)
             
-            Text("Create Your Account")
+            Text("Create Account")
                 .font(.largeTitle)
                 .fontWeight(.heavy)
                 .foregroundColor(.primary)
@@ -33,48 +35,60 @@ struct SignUpView: View {
             Text("Start tracking your grades and schedule today.")
                 .font(.callout)
                 .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
                 .padding(.bottom, 10)
 
             // --- Inputs ---
-            VStack(alignment: .leading) {
+            VStack(alignment: .leading, spacing: 5) {
                 TextField("Email", text: $email)
                     .keyboardType(.emailAddress)
                     .autocapitalization(.none)
                     .padding()
-                    .background(Color(.systemGray5))
-                    .cornerRadius(15)
+                    .background(Color(.systemGray6))
+                    .cornerRadius(10)
                 
                 if let emailError = emailError {
-                    Text(emailError).foregroundColor(.red).font(.caption)
+                    Text(emailError)
+                        .foregroundColor(.red)
+                        .font(.caption)
+                        .padding(.leading, 5)
                 }
             }
 
-            VStack(alignment: .leading) {
+            VStack(alignment: .leading, spacing: 5) {
                 SecureField("Password (min 6 characters)", text: $password)
                     .padding()
-                    .background(Color(.systemGray5))
-                    .cornerRadius(15)
+                    .background(Color(.systemGray6))
+                    .cornerRadius(10)
                 
                 if let passwordError = passwordError {
-                    Text(passwordError).foregroundColor(.red).font(.caption)
+                    Text(passwordError)
+                        .foregroundColor(.red)
+                        .font(.caption)
+                        .padding(.leading, 5)
                 }
             }
             
-            VStack(alignment: .leading) {
+            VStack(alignment: .leading, spacing: 5) {
                 SecureField("Confirm Password", text: $confirmPassword)
                     .padding()
-                    .background(Color(.systemGray5))
-                    .cornerRadius(15)
+                    .background(Color(.systemGray6))
+                    .cornerRadius(10)
                 
                 if let confirmPasswordError = confirmPasswordError {
-                    Text(confirmPasswordError).foregroundColor(.red).font(.caption)
+                    Text(confirmPasswordError)
+                        .foregroundColor(.red)
+                        .font(.caption)
+                        .padding(.leading, 5)
                 }
             }
 
             // --- Sign Up Button ---
             Button(action: signUpUser) {
                 if isSigningUp {
-                    ProgressView().progressViewStyle(CircularProgressViewStyle(tint: .white))
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                        .padding(.vertical, 5)
                 } else {
                     Text("Create Account")
                         .font(.headline)
@@ -84,12 +98,13 @@ struct SignUpView: View {
             .padding()
             .frame(maxWidth: .infinity)
             .background(Color.blue)
-            .cornerRadius(15)
+            .cornerRadius(10)
             .disabled(isSigningUp || email.isEmpty || password.isEmpty)
-            .padding(.top)
+            .padding(.top, 10)
             
             Spacer()
             
+            // --- Navigation to Login ---
             HStack {
                 Text("Already have an account?")
                     .foregroundColor(.secondary)
@@ -103,8 +118,11 @@ struct SignUpView: View {
         .navigationBarHidden(true)
     }
     
+    // --- Validation Logic ---
     func validateForm() -> Bool {
-        emailError = nil; passwordError = nil; confirmPasswordError = nil;
+        emailError = nil
+        passwordError = nil
+        confirmPasswordError = nil
         var isValid = true
         
         if !email.contains("@") || !email.contains(".") {
@@ -122,8 +140,10 @@ struct SignUpView: View {
         return isValid
     }
     
+    // --- Sign Up Logic ---
     func signUpUser() {
         if !validateForm() { return }
+        
         isSigningUp = true
         
         Auth.auth().createUser(withEmail: email, password: password) { authResult, error in
@@ -132,19 +152,22 @@ struct SignUpView: View {
                 
                 if let error = error {
                     let nsError = error as NSError
+                    // Handle specific Firebase errors
                     if nsError.code == AuthErrorCode.emailAlreadyInUse.rawValue {
                         self.emailError = "This email is already in use. Please log in."
+                    } else if nsError.code == AuthErrorCode.weakPassword.rawValue {
+                        self.passwordError = "Password is too weak."
+                    } else if nsError.code == AuthErrorCode.invalidEmail.rawValue {
+                        self.emailError = "Invalid email address."
                     } else {
                         self.emailError = error.localizedDescription
                     }
                 } else {
-                    // --- SUCCESS ---
-                    // 1. Send email
+                    // Success: Send verification email
                     authResult?.user.sendEmailVerification()
                     
-                    // 2. Do nothing else.
-                    // The user is now created and logged in.
-                    // ContentView will detect this change and automatically show VerificationSentView.
+                    // ContentView will automatically detect the new user session
+                    // and show the VerificationSentView.
                 }
             }
         }

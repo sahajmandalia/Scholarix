@@ -8,10 +8,10 @@ struct Constants {
         static let users = "users"
         static let courses = "courses"
         static let deadlines = "deadlines"
+        static let activities = "activities" // Added this line
     }
     
     struct Keys {
-        // Dark mode is handled by the system; no appTheme key needed
         static let notificationsEnabled = "notificationsEnabled"
     }
 }

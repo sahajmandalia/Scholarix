@@ -5,7 +5,7 @@ struct LoginView: View {
     @State private var email = ""
     @State private var password = ""
     
-    // --- State variables for inline error messages ---
+    // --- Error States ---
     @State private var emailError: String? = nil
     @State private var passwordError: String? = nil
     
@@ -13,10 +13,9 @@ struct LoginView: View {
         VStack(spacing: 20) {
             Spacer()
             
-            // --- Logo / Branding ---
-            // If you have added your AppIcon to Assets, you can use it here.
-            // For now, we use a system image as a placeholder.
-            Image(systemName: "graduationcap.fill")
+            // --- Logo ---
+            Image("AppLogo") // Ensure this matches your asset name
+                .renderingMode(.template)
                 .resizable()
                 .scaledToFit()
                 .frame(width: 80, height: 80)
@@ -32,7 +31,7 @@ struct LoginView: View {
                 .foregroundColor(.secondary)
                 .padding(.bottom, 20)
 
-            // --- Email Field ---
+            // --- Inputs ---
             VStack(alignment: .leading) {
                 TextField("Email", text: $email)
                     .keyboardType(.emailAddress)
@@ -42,13 +41,10 @@ struct LoginView: View {
                     .cornerRadius(10)
                 
                 if let emailError = emailError {
-                    Text(emailError)
-                        .foregroundColor(.red)
-                        .font(.caption)
+                    Text(emailError).foregroundColor(.red).font(.caption)
                 }
             }
 
-            // --- Password Field ---
             VStack(alignment: .leading) {
                 SecureField("Password", text: $password)
                     .padding()
@@ -56,13 +52,11 @@ struct LoginView: View {
                     .cornerRadius(10)
                 
                 if let passwordError = passwordError {
-                    Text(passwordError)
-                        .foregroundColor(.red)
-                        .font(.caption)
+                    Text(passwordError).foregroundColor(.red).font(.caption)
                 }
             }
             
-            // --- Forgot Password Link ---
+            // --- Forgot Password ---
             HStack {
                 Spacer()
                 NavigationLink(destination: ForgotPasswordView()) {
@@ -100,10 +94,8 @@ struct LoginView: View {
         .navigationBarHidden(true)
     }
     
-    // --- Login Logic ---
-    
+    // --- Logic ---
     func logInUser() {
-        // Clear previous errors
         emailError = nil
         passwordError = nil
         
@@ -111,16 +103,17 @@ struct LoginView: View {
             DispatchQueue.main.async {
                 if let error = error {
                     let nsError = error as NSError
-                    switch nsError.code {
-                    case AuthErrorCode.wrongPassword.rawValue,
-                         AuthErrorCode.userNotFound.rawValue,
-                         AuthErrorCode.invalidEmail.rawValue:
-                        self.emailError = "We couldn't find an account with those credentials."
-                    default:
-                        self.emailError = "An error occurred. Please try again."
+                    
+                    // Handle specific Firebase errors
+                    if nsError.code == AuthErrorCode.wrongPassword.rawValue ||
+                       nsError.code == AuthErrorCode.userNotFound.rawValue ||
+                       nsError.code == AuthErrorCode.invalidEmail.rawValue {
+                        self.emailError = "Invalid email or password."
+                    } else {
+                        self.emailError = error.localizedDescription
                     }
                 } else {
-                    print("Successfully logged in user: \(authResult?.user.uid ?? "unknown")")
+                    print("Login successful")
                 }
             }
         }

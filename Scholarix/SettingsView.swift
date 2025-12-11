@@ -45,7 +45,6 @@ struct SettingsView: View {
                 }
                 .padding(.vertical, 8)
             }
-            .listRowBackground(Color(.secondarySystemGroupedBackground))
             
             // --- SECTION 2: PREFERENCES ---
             Section(header: Text("Preferences")) {
@@ -61,10 +60,7 @@ struct SettingsView: View {
                     }
                 }
                 .disabled(true)
-                
-                // Dark Mode is now handled by the system
             }
-            .listRowBackground(Color(.secondarySystemGroupedBackground))
             
             // --- SECTION 3: SUPPORT ---
             Section(header: Text("About")) {
@@ -92,7 +88,6 @@ struct SettingsView: View {
                     }
                 }
             }
-            .listRowBackground(Color(.secondarySystemGroupedBackground))
             
             // --- SECTION 4: ACTIONS ---
             Section {
@@ -108,12 +103,9 @@ struct SettingsView: View {
                     }
                 }
             }
-            .listRowBackground(Color(.secondarySystemGroupedBackground))
         }
         .navigationTitle("Settings")
         .navigationBarTitleDisplayMode(.inline)
-        .background(Color(.systemGroupedBackground))
-        .scrollContentBackground(.hidden)
         .alert("Sign Out", isPresented: $showingSignOutAlert) {
             Button("Cancel", role: .cancel) { }
             Button("Sign Out", role: .destructive) {
@@ -128,4 +120,3 @@ struct SettingsView: View {
         }
     }
 }
-

@@ -2,49 +2,71 @@ import SwiftUI
 
 struct CourseRowView: View {
     let course: Course
-    // These lines are what fix the "Extra Arguments" error.
-    // They tell the view to expect these two functions.
     var onEdit: () -> Void
     var onDelete: () -> Void
     
+    var levelColor: Color {
+        switch course.courseLevel {
+        case "AP", "IB": return .purple
+        case "Honors": return .blue
+        default: return .gray
+        }
+    }
+    
     var body: some View {
-        HStack {
+        HStack(spacing: 16) {
+            // Level Indicator Strip
+            RoundedRectangle(cornerRadius: 4)
+                .fill(levelColor)
+                .frame(width: 4)
+                .padding(.vertical, 12)
+            
             VStack(alignment: .leading, spacing: 4) {
                 Text(course.name)
                     .font(.headline)
+                    .foregroundColor(.primary)
                 
                 HStack {
                     Text(course.courseLevel)
-                    if let grade = course.gradePercent {
-                        Text("•")
-                        Text("\(grade, specifier: "%.1f")%")
-                            .fontWeight(.semibold)
-                            .foregroundColor(.blue)
-                    }
+                        .font(.caption)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(levelColor.opacity(0.1))
+                        .foregroundColor(levelColor)
+                        .cornerRadius(4)
+                    
+                    Text("•")
+                        .foregroundColor(.secondary)
+                    
+                    Text("\(course.credits, specifier: "%.1f") Credits")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
                 }
-                .font(.subheadline)
-                .foregroundColor(.secondary)
             }
             
             Spacer()
             
-            // The Menu Button
-            Menu {
-                Button(action: onEdit) {
-                    Label("Edit", systemImage: "pencil")
+            // Grade Badge
+            if let grade = course.gradePercent {
+                VStack(alignment: .trailing, spacing: 0) {
+                    Text("\(grade, specifier: "%.1f")%")
+                        .font(.system(.title3, design: .rounded))
+                        .fontWeight(.bold)
+                        .foregroundColor(grade >= 90 ? .green : (grade >= 80 ? .blue : .orange))
+                    
+                    Text("Current")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
                 }
-                
-                Button(role: .destructive, action: onDelete) {
-                    Label("Delete", systemImage: "trash")
-                }
-            } label: {
-                Image(systemName: "ellipsis.circle")
-                    .font(.title2)
-                    .foregroundColor(.gray)
-                    .padding(8)
+            } else {
+                Text("--")
+                    .foregroundColor(.secondary)
             }
         }
-        .padding(.vertical, 4)
-        .contentShape(Rectangle()) // Makes the whole row tappable for swipes
+        .padding(12)
+        .background(Color(.systemBackground))
+        .cornerRadius(12)
+        .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
+        // Note: The List/Parent view handles the swipe actions
     }
 }

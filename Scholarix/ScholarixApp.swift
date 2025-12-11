@@ -16,6 +16,7 @@ struct ScholarixApp: App {
     // This creates one instance of our SessionManager and keeps it alive
     // for the entire time the app is running.
     @StateObject private var sessionManager = SessionManager()
+    @StateObject private var themeManager = ThemeManager()
     
     // Using system theme by default
 
@@ -24,6 +25,7 @@ struct ScholarixApp: App {
             ContentView()
                 // Inject the SessionManager into the environment
                 .environmentObject(sessionManager)
+                .environmentObject(themeManager)
         }
     }
 }
