@@ -36,27 +36,46 @@ struct EditActivityView: View {
     var body: some View {
         NavigationView {
             ZStack(alignment: .bottom) {
-                Color(.systemGroupedBackground).ignoresSafeArea()
+                // --- PREMIUM BACKGROUND ---
+                LinearGradient(
+                    colors: [Color.green.opacity(0.05), Color.orange.opacity(0.05)],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
                 
                 ScrollView {
-                    VStack(spacing: 16) { // Reduced spacing
+                    VStack(spacing: 20) {
                         header(title: "Edit Activity", subtitle: "Update your experience profile", icon: "pencil.circle.fill", color: .orange)
                         
                         FormCard(title: "BASIC INFO") {
-                            TextField("Activity Name", text: $title)
-                                .formRow()
-                            Divider()
-                            TextField("Role / Position", text: $position)
-                                .formRow()
+                            HStack {
+                                Image(systemName: "star")
+                                    .foregroundColor(.orange)
+                                    .frame(width: 24)
+                                TextField("Activity Name", text: $title)
+                            }
+                            .formRow()
                             Divider()
                             HStack {
+                                Image(systemName: "person.text.rectangle")
+                                    .foregroundColor(.gray)
+                                    .frame(width: 24)
+                                TextField("Role / Position", text: $position)
+                            }
+                            .formRow()
+                            Divider()
+                            HStack {
+                                Image(systemName: "tag")
+                                    .foregroundColor(.gray)
+                                    .frame(width: 24)
                                 Text("Type")
                                 Spacer()
                                 Picker("Type", selection: $type) {
                                     ForEach(types, id: \.self) { Text($0) }
-                                }.pickerStyle(.menu)
+                                }.pickerStyle(.menu).accentColor(.primary)
                             }
-                            .padding(.vertical, 2)
+                            .padding(.vertical, 4)
                             .formRow()
                         }
                         
@@ -65,6 +84,7 @@ struct EditActivityView: View {
                                 .formRow()
                             Divider()
                             Toggle("Currently Ongoing", isOn: $isOngoing)
+                                .padding(.vertical, 4)
                                 .formRow()
                             if !isOngoing {
                                 Divider()
@@ -74,24 +94,34 @@ struct EditActivityView: View {
                         }
                         
                         FormCard(title: "IMPACT") {
-                            TextField("Total Hours (Optional)", text: $hoursString)
-                                .keyboardType(.decimalPad)
-                                .formRow()
+                            HStack {
+                                Image(systemName: "clock")
+                                    .foregroundColor(.gray)
+                                    .frame(width: 24)
+                                TextField("Total Hours (Optional)", text: $hoursString)
+                                    .keyboardType(.decimalPad)
+                            }
+                            .formRow()
                             Divider()
-                            VStack(alignment: .leading, spacing: 4) {
+                            VStack(alignment: .leading, spacing: 8) {
                                 Text("Description / Achievements")
                                     .font(.caption)
                                     .foregroundColor(.secondary)
+                                    .padding(.top, 4)
                                 TextEditor(text: $description)
                                     .frame(height: 100)
-                                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color(.systemGray5), lineWidth: 1))
+                                    .padding(4)
+                                    .background(Color(.systemGray6))
+                                    .cornerRadius(8)
                             }
+                            .padding(.bottom, 8)
                         }
                         
-                        Spacer(minLength: 80)
+                        Spacer(minLength: 100)
                     }
-                    .padding(.top, 1)
+                    .padding(.top, 10)
                 }
+                .dismissKeyboardOnTap() // <--- KEYBOARD DISMISSAL
                 
                 FloatingSaveButton(
                     label: "Save Changes",
@@ -133,4 +163,3 @@ struct EditActivityView: View {
         }
     }
 }
-

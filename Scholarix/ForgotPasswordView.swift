@@ -54,6 +54,7 @@ struct ForgotPasswordView: View {
                 }
             )
         }
+        .dismissKeyboardOnTap()
     }
     
     private func sendPasswordReset() {

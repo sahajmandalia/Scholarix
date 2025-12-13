@@ -73,7 +73,8 @@ class AcademicViewModel: ObservableObject {
         deadlinesListener?.remove()
     }
     
-    // CRUD Operations
+    // MARK: - CRUD Operations
+    
     func deleteCourse(course: Course) {
         guard let uid = Auth.auth().currentUser?.uid, let id = course.id else { return }
         userDoc(uid).collection(Constants.Firestore.courses).document(id).delete()
@@ -81,6 +82,11 @@ class AcademicViewModel: ObservableObject {
     
     func deleteDeadline(deadline: Deadline) {
         guard let uid = Auth.auth().currentUser?.uid, let id = deadline.id else { return }
+        
+        // 1. Cancel Notification
+        NotificationManager.shared.cancelNotification(for: deadline)
+        
+        // 2. Delete from Firestore
         userDoc(uid).collection(Constants.Firestore.deadlines).document(id).delete()
     }
     
@@ -91,7 +97,12 @@ class AcademicViewModel: ObservableObject {
     
     func updateDeadline(deadline: Deadline) async throws {
         guard let uid = Auth.auth().currentUser?.uid, let id = deadline.id else { throw NSError(domain: "Auth", code: 401, userInfo: [NSLocalizedDescriptionKey: "User not logged in"]) }
+        
+        // 1. Update Firestore
         try await userDoc(uid).collection(Constants.Firestore.deadlines).document(id).setData(from: deadline)
+        
+        // 2. Update Notification (Schedule will overwrite the old one)
+        NotificationManager.shared.scheduleNotification(for: deadline)
     }
     
     func toggleCompletion(deadline: Deadline) {
@@ -107,6 +118,13 @@ class AcademicViewModel: ObservableObject {
         
         Task {
             try? await userDoc(uid).collection(Constants.Firestore.deadlines).document(id).setData(from: updated)
+            
+            // Smart Toggle: Cancel notifications if done, Reschedule if marked undone
+            if updated.isCompleted {
+                NotificationManager.shared.cancelNotification(for: updated)
+            } else {
+                NotificationManager.shared.scheduleNotification(for: updated)
+            }
         }
     }
 }

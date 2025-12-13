@@ -22,76 +22,104 @@ struct AddCourseView: View {
     var body: some View {
         NavigationView {
             ZStack(alignment: .bottom) {
-                Color(.systemGroupedBackground).ignoresSafeArea()
+                // --- PREMIUM BACKGROUND ---
+                LinearGradient(
+                    colors: [Color.blue.opacity(0.05), Color.purple.opacity(0.05)],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
                 
                 ScrollView {
-                    VStack(spacing: 16) { // Reduced spacing
+                    VStack(spacing: 20) { // Increased spacing for breathability
                         
                         header(title: "New Course", subtitle: "Add details to track your progress", icon: "book.closed.fill", color: .blue)
                         
                         FormCard(title: "COURSE DETAILS") {
                             HStack {
-                                Image(systemName: "pencil").foregroundColor(.gray)
+                                Image(systemName: "pencil")
+                                    .foregroundColor(.blue.opacity(0.7))
+                                    .frame(width: 24)
                                 TextField("Course Name (e.g. Algebra II)", text: $courseName)
                                     .autocapitalization(.words)
                                     .formRow()
                             }
                             Divider()
                             HStack {
-                                Image(systemName: "graduationcap").foregroundColor(.gray)
+                                Image(systemName: "graduationcap")
+                                    .foregroundColor(.purple.opacity(0.7))
+                                    .frame(width: 24)
                                 Text("Grade Taken")
                                 Spacer()
                                 Picker("Grade Taken", selection: $gradeLevel) {
                                     ForEach(gradeLevels, id: \.self) { level in Text("\(level)th").tag(level) }
-                                }.pickerStyle(.menu).accentColor(.blue)
+                                }.pickerStyle(.menu).accentColor(.primary)
                             }
-                            .padding(.vertical, 2)
+                            .padding(.vertical, 4)
                             .formRow()
                             Divider()
                             HStack {
-                                Image(systemName: "chart.bar").foregroundColor(.gray)
+                                Image(systemName: "chart.bar")
+                                    .foregroundColor(.orange.opacity(0.7))
+                                    .frame(width: 24)
                                 Text("Level")
                                 Spacer()
                                 Picker("Level", selection: $courseLevel) {
                                     ForEach(courseLevels, id: \.self) { level in Text(level).tag(level) }
-                                }.pickerStyle(.menu).accentColor(.blue)
+                                }.pickerStyle(.menu).accentColor(.primary)
                             }
-                            .padding(.vertical, 2)
+                            .padding(.vertical, 4)
                             .formRow()
                         }
                         
                         FormCard(title: "PERFORMANCE") {
                             VStack(alignment: .leading, spacing: 0) {
                                 HStack {
-                                    Image(systemName: "percent").foregroundColor(.gray)
+                                    Image(systemName: "percent")
+                                        .foregroundColor(.green.opacity(0.7))
+                                        .frame(width: 24)
                                     Text("Current Grade")
                                     Spacer()
                                     TextField("95.0", text: $gradePercentString)
                                         .keyboardType(.decimalPad)
                                         .multilineTextAlignment(.trailing)
-                                        .frame(width: 80).padding(8).background(Color(.systemGray6)).cornerRadius(8)
+                                        .frame(width: 90)
+                                        .padding(8)
+                                        .background(Color(.systemGray6))
+                                        .cornerRadius(8)
                                         .onChange(of: gradePercentString) { _, newValue in validateGrade(newValue) }
                                 }
                                 .formRow()
                                 if let error = gradeError {
-                                    Text(error).font(.caption).foregroundColor(.red).padding(.top, 4)
+                                    Text(error)
+                                        .font(.caption)
+                                        .fontWeight(.semibold)
+                                        .foregroundColor(.red)
+                                        .padding(.top, 4)
                                 }
                             }
                             Divider()
                             HStack {
-                                Image(systemName: "star.circle").foregroundColor(.gray)
+                                Image(systemName: "star.circle")
+                                    .foregroundColor(.yellow.opacity(0.8))
+                                    .frame(width: 24)
                                 Text("Credits")
                                 Spacer()
                                 Stepper(value: $credits, in: 0.0...5.0, step: 0.5) {
-                                    Text(String(format: "%.1f", credits)).frame(width: 40).multilineTextAlignment(.center)
-                                }.labelsHidden()
+                                    Text(String(format: "%.1f", credits))
+                                        .fontWeight(.semibold)
+                                        .frame(width: 40)
+                                        .multilineTextAlignment(.center)
+                                }
+                                .labelsHidden()
                             }
                             .formRow()
                         }
-                        Spacer(minLength: 80)
+                        Spacer(minLength: 100)
                     }
-                    .padding(.top, 1)
+                    .padding(.top, 10)
                 }
+                .dismissKeyboardOnTap() // <--- KEYBOARD DISMISSAL
                 
                 FloatingSaveButton(
                     label: "Save Course",
@@ -106,7 +134,7 @@ struct AddCourseView: View {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { isPresented = false }.disabled(isSaving) }
             }
             .alert("Error", isPresented: $showingErrorAlert) { Button("OK", role: .cancel) { } } message: { Text(alertMessage) }
-            .disabled(isSaving)
+            .interactiveDismissDisabled(isSaving)
         }
     }
     
@@ -123,8 +151,11 @@ struct AddCourseView: View {
         guard let userId = Auth.auth().currentUser?.uid else { alertMessage = "Not logged in"; showingErrorAlert = true; return }
         
         isSaving = true
+        // Safe trimming
+        let cleanName = courseName.trimmingCharacters(in: .whitespacesAndNewlines)
+        
         let newCourse = Course(
-            id: nil, name: courseName.trimmingCharacters(in: .whitespacesAndNewlines), gradeLevel: gradeLevel,
+            id: nil, name: cleanName, gradeLevel: gradeLevel,
             courseLevel: courseLevel, credits: credits, gradePercent: gradeValue, createdAt: Timestamp(date: Date())
         )
         
@@ -140,4 +171,3 @@ struct AddCourseView: View {
         }
     }
 }
-

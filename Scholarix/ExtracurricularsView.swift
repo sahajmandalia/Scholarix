@@ -87,6 +87,7 @@ struct ExtracurricularsView: View {
             }
             .onAppear { viewModel.fetchActivities() }
             .onDisappear { viewModel.detachListener() }
+            .dismissKeyboardOnTap()
         }
     }
     

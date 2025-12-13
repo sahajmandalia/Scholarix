@@ -44,8 +44,24 @@ struct SideMenuView: View {
                     VStack(alignment: .leading, spacing: 10) {
                         MenuRow(icon: "person.fill", title: "Profile") { menuManager.close() }
                         MenuRow(icon: "gearshape.fill", title: "Settings") { menuManager.openSettings() }
-                        MenuRow(icon: "doc.text.fill", title: "Resume") { menuManager.close() } // Navigates to Extracurriculars tab via main view logic if needed, or just closes
-                        MenuRow(icon: "questionmark.circle.fill", title: "Help") { menuManager.close() }
+                        MenuRow(icon: "doc.text.fill", title: "Resume") { menuManager.close() }
+                        
+                        // --- UPDATED HELP LINK ---
+                        // We use Link() here instead of MenuRow so it opens Safari automatically
+                        Link(destination: URL(string: "https://sites.google.com/view/scholarixapp/about-support")!) {
+                            HStack(spacing: 12) {
+                                Image(systemName: "questionmark.circle.fill")
+                                    .font(.body)
+                                    .frame(width: 24)
+                                    .foregroundColor(.gray)
+                                Text("Help")
+                                    .font(.body)
+                                    .foregroundColor(.primary)
+                                Spacer()
+                            }
+                            .padding(.horizontal)
+                            .padding(.vertical, 10)
+                        }
                         
                         Divider().padding(.vertical)
                         

@@ -92,6 +92,7 @@ struct LoginView: View {
         }
         .padding()
         .navigationBarHidden(true)
+        .dismissKeyboardOnTap()
     }
     
     // --- Logic ---

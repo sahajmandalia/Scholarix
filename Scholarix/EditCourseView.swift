@@ -35,52 +35,69 @@ struct EditCourseView: View {
     var body: some View {
         NavigationView {
             ZStack(alignment: .bottom) {
-                Color(.systemGroupedBackground).ignoresSafeArea()
+                // --- PREMIUM BACKGROUND ---
+                LinearGradient(
+                    colors: [Color.orange.opacity(0.05), Color.red.opacity(0.05)],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
                 
                 ScrollView {
-                    VStack(spacing: 16) { // Reduced spacing
+                    VStack(spacing: 20) {
                         header(title: "Edit Course", subtitle: "Update course details", icon: "pencil.circle.fill", color: .orange)
                         
                         FormCard(title: "COURSE DETAILS") {
                             HStack {
-                                Image(systemName: "pencil").foregroundColor(.gray)
+                                Image(systemName: "pencil")
+                                    .foregroundColor(.orange)
+                                    .frame(width: 24)
                                 TextField("Course Name", text: $courseName).autocapitalization(.words)
                             }
                             .formRow()
                             Divider()
                             HStack {
-                                Image(systemName: "graduationcap").foregroundColor(.gray)
+                                Image(systemName: "graduationcap")
+                                    .foregroundColor(.gray)
+                                    .frame(width: 24)
                                 Text("Grade Taken")
                                 Spacer()
                                 Picker("Grade Taken", selection: $gradeLevel) {
                                     ForEach(gradeLevels, id: \.self) { level in Text("\(level)th").tag(level) }
-                                }.pickerStyle(.menu).accentColor(.blue)
+                                }.pickerStyle(.menu).accentColor(.primary)
                             }
-                            .padding(.vertical, 2)
+                            .padding(.vertical, 4)
                             .formRow()
                             Divider()
                             HStack {
-                                Image(systemName: "chart.bar").foregroundColor(.gray)
+                                Image(systemName: "chart.bar")
+                                    .foregroundColor(.gray)
+                                    .frame(width: 24)
                                 Text("Level")
                                 Spacer()
                                 Picker("Level", selection: $courseLevel) {
                                     ForEach(courseLevels, id: \.self) { level in Text(level).tag(level) }
-                                }.pickerStyle(.menu).accentColor(.blue)
+                                }.pickerStyle(.menu).accentColor(.primary)
                             }
-                            .padding(.vertical, 2)
+                            .padding(.vertical, 4)
                             .formRow()
                         }
                         
                         FormCard(title: "PERFORMANCE") {
                             VStack(alignment: .leading, spacing: 0) {
                                 HStack {
-                                    Image(systemName: "percent").foregroundColor(.gray)
+                                    Image(systemName: "percent")
+                                        .foregroundColor(.gray)
+                                        .frame(width: 24)
                                     Text("Current Grade")
                                     Spacer()
                                     TextField("95.0", text: $gradeString)
                                         .keyboardType(.decimalPad)
                                         .multilineTextAlignment(.trailing)
-                                        .frame(width: 80).padding(8).background(Color(.systemGray6)).cornerRadius(8)
+                                        .frame(width: 90)
+                                        .padding(8)
+                                        .background(Color(.systemGray6))
+                                        .cornerRadius(8)
                                         .onChange(of: gradeString) { _, newValue in validateGrade(newValue) }
                                 }
                                 .formRow()
@@ -90,7 +107,9 @@ struct EditCourseView: View {
                             }
                             Divider()
                             HStack {
-                                Image(systemName: "star.circle").foregroundColor(.gray)
+                                Image(systemName: "star.circle")
+                                    .foregroundColor(.gray)
+                                    .frame(width: 24)
                                 Text("Credits")
                                 Spacer()
                                 Stepper(value: $credits, in: 0.0...5.0, step: 0.5) {
@@ -99,10 +118,11 @@ struct EditCourseView: View {
                             }
                             .formRow()
                         }
-                        Spacer(minLength: 80)
+                        Spacer(minLength: 100)
                     }
-                    .padding(.top, 1)
+                    .padding(.top, 10)
                 }
+                .dismissKeyboardOnTap() // <--- KEYBOARD DISMISSAL
                 
                 FloatingSaveButton(
                     label: "Save Changes",
@@ -147,4 +167,3 @@ struct EditCourseView: View {
         }
     }
 }
-

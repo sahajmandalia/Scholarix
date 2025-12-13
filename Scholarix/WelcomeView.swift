@@ -1,9 +1,12 @@
 import SwiftUI
 
 struct WelcomeView: View {
+    // Add this to access the guest flag
+    @EnvironmentObject var sessionManager: SessionManager
+    
     var body: some View {
         ZStack {
-            // --- 1. Background Gradient ---
+            // ... Background & Logo ...
             LinearGradient(
                 gradient: Gradient(colors: [Color.blue, Color.purple]),
                 startPoint: .topLeading,
@@ -13,36 +16,30 @@ struct WelcomeView: View {
             
             VStack(spacing: 25) {
                 Spacer()
-                
-                // --- 2. Logo & Branding ---
-                // Using the custom "AppLogo" asset.
-                // If the image doesn't render, check Assets.xcassets to ensure "AppLogo" exists.
+                // ... Logo Code ...
                 Image("AppLogo")
-                    .renderingMode(.template) // Allows recoloring to white
+                    .renderingMode(.template)
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 120, height: 120)
+                    .frame(width: 100, height: 100)
                     .foregroundColor(.white)
-                    .shadow(color: .black.opacity(0.2), radius: 10, x: 0, y: 5)
+                    .shadow(radius: 10)
                     .padding(.bottom, 10)
                 
                 Text("Scholarix")
-                    .font(.system(size: 42, weight: .heavy, design: .rounded))
+                    .font(.system(size: 40, weight: .heavy, design: .default))
                     .foregroundColor(.white)
-                    .shadow(color: .black.opacity(0.2), radius: 5, x: 0, y: 2)
+                    .shadow(radius: 5)
                 
-                Text("Your all-in-one student OS.\nTrack grades, deadlines, and more.")
+                Text("Your all-in-one student OS.")
                     .font(.title3)
-                    .fontWeight(.medium)
                     .foregroundColor(.white.opacity(0.9))
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 40)
+                    .padding(.horizontal, 30)
                 
                 Spacer()
                 
-                // --- 3. Action Buttons ---
-                VStack(spacing: 16) {
-                    // Log In Button
+                // Buttons
+                VStack(spacing: 15) {
                     NavigationLink(destination: LoginView()) {
                         Text("Log In")
                             .font(.headline)
@@ -50,38 +47,25 @@ struct WelcomeView: View {
                             .frame(maxWidth: .infinity)
                             .padding()
                             .background(Color.white)
-                            .cornerRadius(16)
-                            .shadow(color: .black.opacity(0.1), radius: 5, x: 0, y: 2)
+                            .cornerRadius(15)
+                            .shadow(radius: 5)
                     }
                     
-                    // Sign Up Button
                     NavigationLink(destination: SignUpView()) {
                         Text("Create Account")
                             .font(.headline)
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(Material.ultraThin) // Glass effect
-                            .cornerRadius(16)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 16)
-                                    .stroke(Color.white.opacity(0.5), lineWidth: 1)
-                            )
+                            .background(Color.white.opacity(0.2))
+                            .cornerRadius(15)
+                            .overlay(RoundedRectangle(cornerRadius: 15).stroke(Color.white, lineWidth: 1))
                     }
                 }
                 .padding(.horizontal, 30)
-                .padding(.bottom, 60)
+                .padding(.bottom, 50)
             }
         }
-        // Important: Hides the default nav bar so the gradient looks clean
         .navigationBarHidden(true)
-    }
-}
-
-struct WelcomeView_Previews: PreviewProvider {
-    static var previews: some View {
-        NavigationView {
-            WelcomeView()
-        }
     }
 }

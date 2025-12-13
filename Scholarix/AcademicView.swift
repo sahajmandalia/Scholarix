@@ -48,34 +48,6 @@ struct AcademicView: View {
                 // --- Bottom Floating Action Bar ---
                 bottomActionBar
             }
-            .navigationTitle("Academic Hub")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button(action: { menuManager.open() }) {
-                        Image(systemName: "line.3.horizontal")
-                            .font(.system(size: 20, weight: .semibold))
-                            .foregroundColor(.primary)
-                    }
-                }
-                
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    HStack(spacing: 16) {
-                        if selectedTab == 1 {
-                            Button(action: { withAnimation { isListMode.toggle() } }) {
-                                Image(systemName: isListMode ? "calendar" : "list.bullet")
-                                    .font(.system(size: 18, weight: .semibold))
-                                    .foregroundColor(.primary)
-                            }
-                        }
-                        NavigationLink(destination: SettingsView()) {
-                            Image(systemName: "gearshape.fill")
-                                .font(.system(size: 18, weight: .semibold))
-                                .foregroundColor(.primary)
-                        }
-                    }
-                }
-            }
         }
         .sheet(isPresented: $showingAddSheet) {
             if selectedTab == 0 {
@@ -89,6 +61,35 @@ struct AcademicView: View {
             viewModel.fetchDeadlines()
         }
         .onDisappear { viewModel.detachListeners() }
+        .dismissKeyboardOnTap()
+        .navigationTitle("Academic Hub")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: { menuManager.open() }) {
+                    Image(systemName: "line.3.horizontal")
+                        .font(.system(size: 20, weight: .semibold))
+                        .foregroundColor(.primary)
+                }
+            }
+            
+            ToolbarItem(placement: .navigationBarTrailing) {
+                HStack(spacing: 16) {
+                    if selectedTab == 1 {
+                        Button(action: { withAnimation { isListMode.toggle() } }) {
+                            Image(systemName: isListMode ? "calendar" : "list.bullet")
+                                .font(.system(size: 18, weight: .semibold))
+                                .foregroundColor(.primary)
+                        }
+                    }
+                    NavigationLink(destination: SettingsView()) {
+                        Image(systemName: "gearshape.fill")
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundColor(.primary)
+                    }
+                }
+            }
+        }
     }
     
     // --- Subviews ---

@@ -10,22 +10,24 @@ import FirebaseCore
 
 @main
 struct ScholarixApp: App {
-    // This line connects your AppDelegate file for Firebase setup.
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
-
-    // This creates one instance of our SessionManager and keeps it alive
-    // for the entire time the app is running.
-    @StateObject private var sessionManager = SessionManager()
-    @StateObject private var themeManager = ThemeManager()
     
-    // Using system theme by default
+    @StateObject private var sessionManager = SessionManager()
+    
+    // Initialize ThemeManager here
+    @StateObject private var themeManager = ThemeManager()
 
     var body: some Scene {
         WindowGroup {
             ContentView()
-                // Inject the SessionManager into the environment
                 .environmentObject(sessionManager)
                 .environmentObject(themeManager)
+                // This line performs the magic switch
+                .preferredColorScheme(themeManager.colorScheme)
+                .onAppear {
+                    // Smart check on launch
+                    NotificationManager.shared.checkPermissions()
+                }
         }
     }
 }

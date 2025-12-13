@@ -3,16 +3,16 @@ import FirebaseAuth
 
 struct SettingsView: View {
     @Environment(\.dismiss) var dismiss
+    @EnvironmentObject var themeManager: ThemeManager
     
-    @AppStorage("notificationsEnabled") private var notificationsEnabled = false
+    // Local state for the toggle
+    @State private var notificationsEnabled = false
     @State private var showingSignOutAlert = false
     
-    // Get current user email safely
     private var userEmail: String {
-        Auth.auth().currentUser?.email ?? "Guest User"
+        Auth.auth().currentUser?.email ?? "Student"
     }
     
-    // Get app version
     private var appVersion: String {
         Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
     }
@@ -39,65 +39,113 @@ struct SettingsView: View {
                             .textCase(.uppercase)
                         
                         Text(userEmail)
-                            .font(.system(.headline, design: .rounded))
+                            .font(.headline)
                             .foregroundColor(.primary)
                     }
                 }
                 .padding(.vertical, 8)
             }
             
-            // --- SECTION 2: PREFERENCES ---
-            Section(header: Text("Preferences")) {
-                // Notifications: Set to OFF and Disabled
-                Toggle(isOn: .constant(false)) {
-                    Label {
-                        Text("Notifications (Coming Soon)")
-                            .font(.system(.body, design: .rounded))
-                            .foregroundColor(.secondary)
-                    } icon: {
-                        Image(systemName: "bell.slash.fill")
-                            .foregroundColor(.gray)
+            // --- SECTION 2: APPEARANCE ---
+            Section(header: Text("Appearance")) {
+                // iOS-Style Theme Picker
+                Picker("Theme", selection: $themeManager.selectedTheme) {
+                    ForEach(ThemePreference.allCases) { theme in
+                        Text(theme.displayName).tag(theme)
                     }
                 }
-                .disabled(true)
+                .pickerStyle(.segmented)
+                .listRowSeparator(.hidden)
+                .padding(.vertical, 4)
             }
             
-            // --- SECTION 3: SUPPORT ---
-            Section(header: Text("About")) {
+            // --- SECTION 3: PREFERENCES ---
+            Section(header: Text("General")) {
+                // Notifications with a colorful icon
+                Toggle(isOn: $notificationsEnabled) {
+                    Label {
+                        Text("Notifications")
+                    } icon: {
+                        Image(systemName: "bell.badge.fill")
+                            .foregroundColor(.white)
+                            .background(Color.red) // iOS Red for notifications
+                            .clipShape(RoundedRectangle(cornerRadius: 6))
+                    }
+                }
+                .onChange(of: notificationsEnabled) { newValue in
+                    if newValue {
+                        NotificationManager.shared.requestPermission()
+                    } else if let url = URL(string: UIApplication.openSettingsURLString) {
+                        // Direct user to settings to turn off
+                        UIApplication.shared.open(url)
+                    }
+                }
+            }
+            
+            // --- SECTION 4: SUPPORT ---
+            Section(header: Text("Legal & Support")) {
+                
+                // --- NEW WEBSITE LINK ---
+                Link(destination: URL(string: "https://sites.google.com/view/scholarixapp/home")!) {
+                    HStack {
+                        Label {
+                            Text("Website")
+                                .foregroundColor(.primary)
+                        } icon: {
+                            Image(systemName: "globe")
+                                .foregroundColor(.white)
+                                .background(Color.green) // Green for website
+                                .clipShape(RoundedRectangle(cornerRadius: 6))
+                        }
+                        Spacer()
+                        Image(systemName: "arrow.up.right")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                }
+                
+                // Privacy Policy Link
+                Link(destination: URL(string: "https://sites.google.com/view/scholarixapp/legal")!) {
+                    HStack {
+                        Label {
+                            Text("Privacy Policy")
+                                .foregroundColor(.primary)
+                        } icon: {
+                            Image(systemName: "hand.raised.fill")
+                                .foregroundColor(.white)
+                                .background(Color.blue)
+                                .clipShape(RoundedRectangle(cornerRadius: 6))
+                        }
+                        Spacer()
+                        Image(systemName: "arrow.up.right")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                }
+                
+                // App Version
                 HStack {
                     Label {
                         Text("Version")
-                            .font(.system(.body, design: .rounded))
                     } icon: {
-                        Image(systemName: "info.circle.fill")
-                            .foregroundColor(.blue)
+                        Image(systemName: "info")
+                            .foregroundColor(.white)
+                            .background(Color.gray)
+                            .clipShape(RoundedRectangle(cornerRadius: 6))
                     }
                     Spacer()
                     Text(appVersion)
-                        .font(.system(.callout, design: .monospaced))
+                        .font(.callout)
                         .foregroundColor(.secondary)
-                }
-                
-                Link(destination: URL(string: "https://www.google.com")!) {
-                    Label {
-                        Text("Help Center")
-                            .font(.system(.body, design: .rounded))
-                    } icon: {
-                        Image(systemName: "questionmark.circle.fill")
-                            .foregroundColor(.green)
-                    }
                 }
             }
             
-            // --- SECTION 4: ACTIONS ---
+            // --- SECTION 5: DANGER ZONE ---
             Section {
-                Button(role: .destructive, action: {
-                    showingSignOutAlert = true
-                }) {
+                Button(role: .destructive, action: { showingSignOutAlert = true }) {
                     HStack {
                         Spacer()
                         Text("Sign Out")
-                            .font(.system(.body, design: .rounded))
                             .fontWeight(.bold)
                         Spacer()
                     }
@@ -109,14 +157,13 @@ struct SettingsView: View {
         .alert("Sign Out", isPresented: $showingSignOutAlert) {
             Button("Cancel", role: .cancel) { }
             Button("Sign Out", role: .destructive) {
-                do {
-                    try Auth.auth().signOut()
-                } catch {
-                    print("Error signing out: \(error.localizedDescription)")
-                }
+                try? Auth.auth().signOut()
             }
         } message: {
             Text("Are you sure you want to sign out?")
+        }
+        .onAppear {
+            notificationsEnabled = NotificationManager.shared.isAuthorized
         }
     }
 }

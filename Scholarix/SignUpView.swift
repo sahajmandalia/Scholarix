@@ -116,6 +116,7 @@ struct SignUpView: View {
         }
         .padding(.horizontal, 30)
         .navigationBarHidden(true)
+        .dismissKeyboardOnTap()
     }
     
     // --- Validation Logic ---

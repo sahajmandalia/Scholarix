@@ -5,6 +5,7 @@ struct EditDeadlineView: View {
     @ObservedObject var viewModel: AcademicViewModel
     private var originalDeadline: Deadline
     
+    // --- Editable Fields ---
     @State private var title: String
     @State private var type: String
     @State private var dueDate: Date
@@ -14,23 +15,32 @@ struct EditDeadlineView: View {
     @State private var priority: String
     @State private var selectedCourseId: String
     
+    // --- UI State ---
     @Environment(\.dismiss) var dismiss
     @State private var isSaving = false
     @State private var showingErrorAlert = false
     @State private var errorMessage = ""
     
+    // --- Constants ---
     let types = ["Homework", "Test", "Project", "Essay", "Application", "Event", "Club", "Sport", "Other"]
     let priorities = ["Low", "Medium", "High"]
     
-    var isEvent: Bool { return ["Event", "Club", "Sport", "Other"].contains(type) }
+    var isEvent: Bool {
+        return ["Event", "Club", "Sport", "Other"].contains(type)
+    }
     
     init(viewModel: AcademicViewModel, deadlineToEdit: Deadline) {
         self.viewModel = viewModel
         self.originalDeadline = deadlineToEdit
+        
         _title = State(initialValue: deadlineToEdit.title)
         _type = State(initialValue: deadlineToEdit.type)
         _dueDate = State(initialValue: deadlineToEdit.dueDate)
-        _endDate = State(initialValue: deadlineToEdit.endDate ?? deadlineToEdit.dueDate.addingTimeInterval(3600))
+        
+        // Ensure end date is at least 1 hour after start if nil
+        let defaultEnd = deadlineToEdit.dueDate.addingTimeInterval(3600)
+        _endDate = State(initialValue: deadlineToEdit.endDate ?? defaultEnd)
+        
         _isAllDay = State(initialValue: deadlineToEdit.isAllDay)
         _details = State(initialValue: deadlineToEdit.details ?? "")
         _priority = State(initialValue: deadlineToEdit.priority ?? "Medium")
@@ -40,83 +50,149 @@ struct EditDeadlineView: View {
     var body: some View {
         NavigationView {
             ZStack(alignment: .bottom) {
-                Color(.systemGroupedBackground).ignoresSafeArea()
+                // --- 1. Background Gradient ---
+                LinearGradient(
+                    colors: [Color.orange.opacity(0.05), Color.pink.opacity(0.05)],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
                 
+                // --- 2. Scrollable Form Content ---
                 ScrollView {
-                    VStack(spacing: 16) { // Reduced spacing
+                    VStack(spacing: 20) {
+                        // Custom Header
                         header(title: "Edit Task", subtitle: "Update task details", icon: "pencil.circle.fill", color: .orange)
                         
+                        // Card 1: Details
                         FormCard(title: "TASK DETAILS") {
                             HStack {
-                                Image(systemName: "pencil.and.outline").foregroundColor(.gray)
+                                Image(systemName: "pencil.and.outline")
+                                    .foregroundColor(.orange)
+                                    .frame(width: 24)
                                 TextField("Title", text: $title)
                             }
+                            .formRow()
+                            
                             Divider()
+                            
                             HStack {
-                                Image(systemName: "tag").foregroundColor(.gray)
+                                Image(systemName: "tag")
+                                    .foregroundColor(.gray)
+                                    .frame(width: 24)
                                 Text("Type")
                                 Spacer()
-                                Picker("Type", selection: $type) { ForEach(types, id: \.self) { Text($0).tag($0) } }
-                                    .pickerStyle(.menu).accentColor(.blue)
+                                Picker("Type", selection: $type) {
+                                    ForEach(types, id: \.self) { typeName in
+                                        Text(typeName).tag(typeName)
+                                    }
+                                }
+                                .pickerStyle(.menu)
+                                .accentColor(.primary)
                             }
+                            .padding(.vertical, 4)
+                            .formRow()
                         }
                         
+                        // Card 2: Timeline
                         FormCard(title: "TIMELINE") {
                             if isEvent {
                                 Toggle(isOn: $isAllDay) {
                                     HStack {
-                                        Image(systemName: "clock").foregroundColor(.gray)
+                                        Image(systemName: "clock")
+                                            .foregroundColor(.purple)
+                                            .frame(width: 24)
                                         Text("All-day")
                                     }
                                 }
+                                .padding(.vertical, 4)
+                                .formRow()
+                                
                                 Divider()
+                                
                                 if isAllDay {
                                     DatePicker("Date", selection: $dueDate, displayedComponents: .date)
+                                        .formRow()
                                 } else {
                                     DatePicker("Starts", selection: $dueDate, displayedComponents: [.date, .hourAndMinute])
                                         .onChange(of: dueDate) { _, newDate in
-                                            if newDate > endDate { endDate = newDate.addingTimeInterval(3600) }
+                                            // Auto-adjust end date if it becomes invalid
+                                            if newDate > endDate {
+                                                endDate = newDate.addingTimeInterval(3600)
+                                            }
                                         }
+                                        .formRow()
+                                    
                                     Divider()
+                                    
                                     DatePicker("Ends", selection: $endDate, displayedComponents: [.date, .hourAndMinute])
+                                        .formRow()
                                 }
                             } else {
                                 DatePicker("Due Date", selection: $dueDate, displayedComponents: [.date, .hourAndMinute])
+                                    .formRow()
                             }
                         }
                         
+                        // Card 3: Additional Info
                         FormCard(title: "ADDITIONAL INFO") {
                             if !isEvent {
                                 HStack {
-                                    Image(systemName: "book.closed").foregroundColor(.gray)
+                                    Image(systemName: "book.closed")
+                                        .foregroundColor(.gray)
+                                        .frame(width: 24)
                                     Text("Course")
                                     Spacer()
                                     Picker("Course", selection: $selectedCourseId) {
                                         Text("None").tag("none")
-                                        ForEach(viewModel.courses) { course in Text(course.name).tag(course.id ?? "") }
-                                    }.pickerStyle(.menu).accentColor(.blue)
+                                        ForEach(viewModel.courses) { course in
+                                            Text(course.name).tag(course.id ?? "")
+                                        }
+                                    }
+                                    .pickerStyle(.menu)
+                                    .accentColor(.primary)
                                 }
+                                .padding(.vertical, 4)
+                                .formRow()
+                                
                                 Divider()
                             }
+                            
                             HStack {
-                                Image(systemName: "flag").foregroundColor(.gray).padding(.trailing, 2)
+                                Image(systemName: "flag")
+                                    .foregroundColor(.red.opacity(0.7))
+                                    .frame(width: 24)
                                 Text("Priority")
                                 Spacer()
                                 Picker("Priority", selection: $priority) {
-                                    ForEach(priorities, id: \.self) { Text($0).tag($0) }
-                                }.pickerStyle(.menu).accentColor(.blue)
+                                    ForEach(priorities, id: \.self) { level in
+                                        Text(level).tag(level)
+                                    }
+                                }
+                                .pickerStyle(.menu)
+                                .accentColor(.primary)
                             }
+                            .padding(.vertical, 4)
+                            .formRow()
+                            
                             Divider()
+                            
                             HStack {
-                                Image(systemName: "text.alignleft").foregroundColor(.gray)
-                                TextField("Details", text: $details)
+                                Image(systemName: "text.alignleft")
+                                    .foregroundColor(.gray)
+                                    .frame(width: 24)
+                                TextField("Details (Optional)", text: $details)
                             }
+                            .formRow()
                         }
-                        Spacer(minLength: 80)
+                        
+                        Spacer(minLength: 100) // Space for the floating button
                     }
-                    .padding(.top, 1)
+                    .padding(.top, 10)
                 }
+                .dismissKeyboardOnTap() // Helper from Extensions.swift
                 
+                // --- 3. Floating Save Button ---
                 FloatingSaveButton(
                     label: "Save Changes",
                     isDisabled: title.isEmpty || isSaving,
@@ -126,15 +202,26 @@ struct EditDeadlineView: View {
             }
             .navigationTitle("Edit Task")
             .navigationBarTitleDisplayMode(.inline)
-            .alert(isPresented: $showingErrorAlert) { Alert(title: Text("Error"), message: Text(errorMessage), dismissButton: .default(Text("OK"))) }
+            // Alert for errors
+            .alert(isPresented: $showingErrorAlert) {
+                Alert(title: Text("Error"), message: Text(errorMessage), dismissButton: .default(Text("OK")))
+            }
         }
     }
     
+    // --- Update Logic ---
     private func updateDeadline() {
-        if isEvent && !isAllDay && endDate < dueDate { errorMessage = "End time cannot be before start time."; showingErrorAlert = true; return }
+        // Validation for Events
+        if isEvent && !isAllDay && endDate < dueDate {
+            errorMessage = "End time cannot be before start time."
+            showingErrorAlert = true
+            return
+        }
         
         Task {
             await MainActor.run { isSaving = true }
+            
+            // Create updated object
             var updatedDeadline = originalDeadline
             updatedDeadline.title = title
             updatedDeadline.type = type
