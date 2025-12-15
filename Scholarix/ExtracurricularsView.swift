@@ -9,87 +9,94 @@ struct ExtracurricularsView: View {
     @State private var isSearching = false
     
     var body: some View {
-        NavigationStack {
-            ZStack(alignment: .bottom) {
-                Color(.systemGroupedBackground).ignoresSafeArea()
-                
-                // Content
-                List {
-                    // 1. Impact Summary Card
-                    Section {
-                        ImpactCard(hours: viewModel.totalHours, active: viewModel.activeCount)
-                            .listRowInsets(EdgeInsets())
-                            .listRowBackground(Color.clear)
-                            .padding(.horizontal, 16)
-                            .padding(.top, 10)
-                            .padding(.bottom, 10)
-                    }
+            NavigationStack {
+                ZStack(alignment: .bottom) {
+                    Color(.systemGroupedBackground).ignoresSafeArea()
                     
-                    // 2. Activities List
-                    if viewModel.filteredActivities.isEmpty {
+                    // Content
+                    List {
+                        // --- NEW TITLE HEADER ---
                         Section {
-                            emptyStateView
+                            header(title: "Extracurriculars", subtitle: "Clubs, Sports & Awards", icon: "trophy.fill", color: .orange)
+                                .listRowInsets(EdgeInsets())
                                 .listRowBackground(Color.clear)
+                                .padding(.top, 10)
                         }
-                    } else {
-                        Section(header: Text("Activities").font(.headline).foregroundColor(.primary)) {
-                            ForEach(viewModel.filteredActivities) { activity in
-                                ActivityCard(
-                                    activity: activity,
-                                    onEdit: { selectedActivity = activity },
-                                    onDelete: { viewModel.deleteActivity(activity) }
-                                )
-                                .swipeActions(edge: .leading) {
-                                    Button { selectedActivity = activity } label: { Label("Edit", systemImage: "pencil") }
-                                        .tint(.orange)
-                                }
-                                .swipeActions(edge: .trailing) {
-                                    Button(role: .destructive) { viewModel.deleteActivity(activity) } label: { Label("Delete", systemImage: "trash") }
-                                }
-                                .listRowSeparator(.hidden)
+
+                        // 1. Impact Summary Card
+                        Section {
+                            ImpactCard(hours: viewModel.totalHours, active: viewModel.activeCount)
+                                .listRowInsets(EdgeInsets())
                                 .listRowBackground(Color.clear)
-                                .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+                                .padding(.horizontal, 16)
+                                .padding(.bottom, 10)
+                        }
+                        
+                        // 2. Activities List
+                        if viewModel.filteredActivities.isEmpty {
+                            Section {
+                                emptyStateView
+                                    .listRowBackground(Color.clear)
+                            }
+                        } else {
+                            Section(header: Text("Activities").font(.headline).foregroundColor(.primary)) {
+                                ForEach(viewModel.filteredActivities) { activity in
+                                    ActivityCard(
+                                        activity: activity,
+                                        onEdit: { selectedActivity = activity },
+                                        onDelete: { viewModel.deleteActivity(activity) }
+                                    )
+                                    .swipeActions(edge: .leading) {
+                                        Button { selectedActivity = activity } label: { Label("Edit", systemImage: "pencil") }
+                                            .tint(.orange)
+                                    }
+                                    .swipeActions(edge: .trailing) {
+                                        Button(role: .destructive) { viewModel.deleteActivity(activity) } label: { Label("Delete", systemImage: "trash") }
+                                    }
+                                    .listRowSeparator(.hidden)
+                                    .listRowBackground(Color.clear)
+                                    .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+                                }
                             }
                         }
                     }
+                    .listStyle(.plain)
+                    .scrollContentBackground(.hidden)
+                    .padding(.bottom, 80) // Space for bottom bar
+                    
+                    // Bottom Action Bar
+                    bottomActionBar
                 }
-                .listStyle(.plain)
-                .scrollContentBackground(.hidden)
-                .padding(.bottom, 80) // Space for bottom bar
-                
-                // Bottom Action Bar
-                bottomActionBar
-            }
-            .navigationTitle("Resume Builder")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button(action: { menuManager.open() }) {
-                        Image(systemName: "line.3.horizontal")
-                            .font(.system(size: 20, weight: .semibold))
-                            .foregroundColor(.primary)
+                .navigationTitle("Extracurricular Hub") // <--- UPDATED TITLE
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Button(action: { menuManager.open() }) {
+                            Image(systemName: "line.3.horizontal")
+                                .font(.system(size: 20, weight: .semibold))
+                                .foregroundColor(.primary)
+                        }
+                    }
+                    
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        NavigationLink(destination: SettingsView()) {
+                            Image(systemName: "gearshape.fill")
+                                .font(.system(size: 18, weight: .semibold))
+                                .foregroundColor(.primary)
+                        }
                     }
                 }
-                
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    NavigationLink(destination: SettingsView()) {
-                        Image(systemName: "gearshape.fill")
-                            .font(.system(size: 18, weight: .semibold))
-                            .foregroundColor(.primary)
-                    }
+                .sheet(isPresented: $showingAddSheet) {
+                    AddActivityView(isPresented: $showingAddSheet, viewModel: viewModel)
                 }
+                .sheet(item: $selectedActivity) { activity in
+                    EditActivityView(activity: activity, viewModel: viewModel)
+                }
+                .onAppear { viewModel.fetchActivities() }
+                .onDisappear { viewModel.detachListener() }
+                .dismissKeyboardOnTap()
             }
-            .sheet(isPresented: $showingAddSheet) {
-                AddActivityView(isPresented: $showingAddSheet, viewModel: viewModel)
-            }
-            .sheet(item: $selectedActivity) { activity in
-                EditActivityView(activity: activity, viewModel: viewModel)
-            }
-            .onAppear { viewModel.fetchActivities() }
-            .onDisappear { viewModel.detachListener() }
-            .dismissKeyboardOnTap()
         }
-    }
     
     // --- Components ---
     

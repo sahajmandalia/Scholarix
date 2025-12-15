@@ -48,47 +48,50 @@ struct AcademicView: View {
                 // --- Bottom Floating Action Bar ---
                 bottomActionBar
             }
-        }
-        .sheet(isPresented: $showingAddSheet) {
-            if selectedTab == 0 {
-                AddCourseView(isPresented: $showingAddSheet)
-            } else {
-                AddDeadlineView(isPresented: $showingAddSheet, courses: viewModel.courses)
-            }
-        }
-        .onAppear {
-            viewModel.fetchCourses()
-            viewModel.fetchDeadlines()
-        }
-        .onDisappear { viewModel.detachListeners() }
-        .dismissKeyboardOnTap()
-        .navigationTitle("Academic Hub")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .navigationBarLeading) {
-                Button(action: { menuManager.open() }) {
-                    Image(systemName: "line.3.horizontal")
-                        .font(.system(size: 20, weight: .semibold))
-                        .foregroundColor(.primary)
+            .sheet(isPresented: $showingAddSheet) {
+                if selectedTab == 0 {
+                    AddCourseView(isPresented: $showingAddSheet)
+                } else {
+                    AddDeadlineView(isPresented: $showingAddSheet, courses: viewModel.courses)
                 }
             }
-            
-            ToolbarItem(placement: .navigationBarTrailing) {
-                HStack(spacing: 16) {
-                    if selectedTab == 1 {
-                        Button(action: { withAnimation { isListMode.toggle() } }) {
-                            Image(systemName: isListMode ? "calendar" : "list.bullet")
+            .onAppear {
+                viewModel.fetchCourses()
+                viewModel.fetchDeadlines()
+            }
+            .onDisappear { viewModel.detachListeners() }
+            .dismissKeyboardOnTap()
+            .navigationTitle("Academic Hub")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                // --- 1. Side Menu Button (Left) ---
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: { menuManager.open() }) {
+                        Image(systemName: "line.3.horizontal")
+                            .font(.system(size: 20, weight: .semibold))
+                            .foregroundColor(.primary)
+                    }
+                }
+                
+                // --- 2. Settings & View Options (Right) ---
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    HStack(spacing: 16) {
+                        if selectedTab == 1 {
+                            Button(action: { withAnimation { isListMode.toggle() } }) {
+                                Image(systemName: isListMode ? "calendar" : "list.bullet")
+                                    .font(.system(size: 18, weight: .semibold))
+                                    .foregroundColor(.primary)
+                            }
+                        }
+                        NavigationLink(destination: SettingsView()) {
+                            Image(systemName: "gearshape.fill")
                                 .font(.system(size: 18, weight: .semibold))
                                 .foregroundColor(.primary)
                         }
                     }
-                    NavigationLink(destination: SettingsView()) {
-                        Image(systemName: "gearshape.fill")
-                            .font(.system(size: 18, weight: .semibold))
-                            .foregroundColor(.primary)
-                    }
                 }
             }
+            .toolbarBackground(.visible, for: .navigationBar)
         }
     }
     
@@ -96,6 +99,14 @@ struct AcademicView: View {
     
     var coursesList: some View {
         List {
+            // --- NEW TITLE HEADER ---
+            Section {
+                header(title: "Academic Hub", subtitle: "Your grades & performance", icon: "graduationcap.fill", color: .blue)
+                    .listRowInsets(EdgeInsets())
+                    .listRowBackground(Color.clear)
+                    .padding(.top, 10)
+            }
+            
             // 1. GPA Card (Pinned to top)
             Section {
                 GPACard(weighted: viewModel.weightedGPA, unweighted: viewModel.unweightedGPA)
@@ -405,3 +416,4 @@ struct TaskRowCard: View {
         .onTapGesture { onEdit() }
     }
 }
+
