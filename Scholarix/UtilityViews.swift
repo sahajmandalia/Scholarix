@@ -24,27 +24,33 @@ struct header: View {
     let color: Color
     
     var body: some View {
-        HStack {
+        HStack(spacing: 12) {
             Image(systemName: icon)
-                .font(.system(size: 32)) // Slightly smaller icon
+                .font(.system(size: 32, weight: .semibold))
                 .foregroundColor(color)
-                .padding(10)
-                .background(color.opacity(0.1))
-                .clipShape(Circle())
+                .padding(12)
+                .background(
+                    Circle()
+                        .fill(color.opacity(0.15))
+                )
+                .overlay(
+                    Circle()
+                        .stroke(color.opacity(0.3), lineWidth: 2)
+                )
             
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 3) {
                 Text(title)
-                    .font(.title2)
+                    .font(.system(.title2, design: .rounded))
                     .fontWeight(.bold)
+                    .foregroundColor(Theme.textPrimary)
                 Text(subtitle)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                    .font(.system(.subheadline, design: .rounded))
+                    .foregroundColor(Theme.textSecondary)
             }
             Spacer()
         }
         .padding(.horizontal)
-        .padding(.top, 6)
-        .padding(.bottom, 6)
+        .padding(.vertical, 8)
     }
 }
 
@@ -58,21 +64,26 @@ struct FormCard<Content: View>: View {
     }
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) { // Compact spacing
+        VStack(alignment: .leading, spacing: 8) {
             Text(title)
-                .font(.caption)
+                .font(.system(.caption, design: .rounded))
                 .fontWeight(.bold)
-                .foregroundColor(.secondary)
+                .foregroundColor(Theme.textSecondary)
+                .textCase(.uppercase)
+                .tracking(0.5)
                 .padding(.horizontal)
-                .padding(.bottom, 0)
             
             VStack(spacing: 0) {
                 content
-                    .padding(8) // Slightly tighter internal padding
+                    .padding(12)
             }
-            .background(Color(.secondarySystemGroupedBackground))
-            .cornerRadius(10)
-            .shadow(color: Color.black.opacity(0.04), radius: 3, x: 0, y: 1)
+            .background(Theme.cardBackground)
+            .cornerRadius(16)
+            .shadow(color: Theme.shadowLight, radius: 8, x: 0, y: 2)
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(Theme.borderSubtle, lineWidth: 0.5)
+            )
             .padding(.horizontal)
         }
     }
@@ -85,32 +96,42 @@ struct FloatingSaveButton: View {
     let action: () -> Void
     
     var body: some View {
-        VStack {
-            Button(action: action) {
-                if isSaving {
-                    ProgressView().tint(.white)
-                        .padding(.vertical, 5)
-                } else {
-                    Text(label)
-                        .font(.headline)
-                        .fontWeight(.bold)
-                        .foregroundColor(.white)
-                }
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 10)
-            .padding(.horizontal, 12)
-            .background(
-                isDisabled ? Color.gray : Color.blue
+        VStack(spacing: 0) {
+            // Gradient fade at top
+            LinearGradient(
+                colors: [Theme.backgroundGrouped.opacity(0), Theme.backgroundGrouped],
+                startPoint: .top,
+                endPoint: .bottom
             )
-            .cornerRadius(12)
-            .shadow(color: Color.blue.opacity(0.3), radius: 10, x: 0, y: 5)
+            .frame(height: 20)
+            
+            Button(action: action) {
+                HStack(spacing: 8) {
+                    if isSaving {
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                            .scaleEffect(0.9)
+                    } else {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 18, weight: .semibold))
+                        Text(label)
+                            .font(.system(.body, design: .rounded))
+                            .fontWeight(.bold)
+                    }
+                }
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 16)
+                .background(
+                    isDisabled ? Theme.buttonDisabled : Theme.brandGradient
+                )
+                .cornerRadius(16)
+                .shadow(color: isDisabled ? Theme.shadowLight : Theme.brandPrimary.opacity(0.4), radius: 12, x: 0, y: 6)
+            }
             .disabled(isDisabled)
             .padding(.horizontal)
-            .padding(.bottom, 6)
+            .padding(.bottom, 12)
+            .background(Theme.backgroundGrouped)
         }
-        .background(
-            LinearGradient(colors: [Color(.systemGroupedBackground).opacity(0), Color(.systemGroupedBackground)], startPoint: .top, endPoint: .bottom)
-        )
     }
 }

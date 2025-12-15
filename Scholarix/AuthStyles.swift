@@ -1,55 +1,75 @@
 import SwiftUI
 
-// MARK: - 1. Custom Text Field (Glassmorphism Style)
+// MARK: - 1. Custom Text Field (Glassmorphism Style - Student Friendly)
 struct CustomTextField: View {
     var placeholder: String
     @Binding var text: String
     var icon: String
 
     var body: some View {
-        HStack {
+        HStack(spacing: 12) {
             Image(systemName: icon)
-                .foregroundColor(.white.opacity(0.7))
-                .frame(width: 20) // Fixed width for alignment
+                .font(.system(size: 18, weight: .medium))
+                .foregroundColor(.white.opacity(0.9))
+                .frame(width: 24)
             
             TextField("", text: $text)
-                // Uses the custom placeholder extension below
                 .placeholder(when: text.isEmpty) {
-                    Text(placeholder).foregroundColor(.white.opacity(0.7))
+                    Text(placeholder)
+                        .foregroundColor(.white.opacity(0.7))
                 }
                 .foregroundColor(.white)
+                .font(.system(.body, design: .rounded))
         }
-        .padding()
-        .background(Color.white.opacity(0.2)) // The "Glass" effect
-        .cornerRadius(10)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 14)
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill(Color.white.opacity(0.2))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14)
+                        .stroke(Color.white.opacity(0.3), lineWidth: 1)
+                )
+        )
+        .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
     }
 }
 
-// MARK: - 2. Custom Secure Field (For Passwords)
+// MARK: - 2. Custom Secure Field (For Passwords - Student Friendly)
 struct CustomSecureField: View {
     var placeholder: String
     @Binding var text: String
 
     var body: some View {
-        HStack {
-            Image(systemName: "lock")
-                .foregroundColor(.white.opacity(0.7))
-                .frame(width: 20)
+        HStack(spacing: 12) {
+            Image(systemName: "lock.fill")
+                .font(.system(size: 18, weight: .medium))
+                .foregroundColor(.white.opacity(0.9))
+                .frame(width: 24)
             
             SecureField("", text: $text)
                 .placeholder(when: text.isEmpty) {
-                    Text(placeholder).foregroundColor(.white.opacity(0.7))
+                    Text(placeholder)
+                        .foregroundColor(.white.opacity(0.7))
                 }
                 .foregroundColor(.white)
+                .font(.system(.body, design: .rounded))
         }
-        .padding()
-        .background(Color.white.opacity(0.2))
-        .cornerRadius(10)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 14)
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill(Color.white.opacity(0.2))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14)
+                        .stroke(Color.white.opacity(0.3), lineWidth: 1)
+                )
+        )
+        .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
     }
 }
 
 // MARK: - 3. Extension for Custom Placeholder Color
-// SwiftUI default placeholders are grey; this allows us to make them white/transparent
 extension View {
     func placeholder<Content: View>(
         when shouldShow: Bool,
