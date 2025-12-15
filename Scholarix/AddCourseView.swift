@@ -112,10 +112,10 @@ struct AddCourseView: View {
                                         .foregroundColor(Theme.textPrimary)
                                         .frame(width: 40)
                                         .multilineTextAlignment(.center)
+                                        .background(Theme.inputBackground)
+                                        .cornerRadius(8)
                                 }
-                                .labelsHidden()
                             }
-                            .formRow()
                         }
                         Spacer(minLength: 100)
                     }
@@ -173,3 +173,4 @@ struct AddCourseView: View {
         }
     }
 }
+

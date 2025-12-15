@@ -125,9 +125,7 @@ struct EditCourseView: View {
                                         .frame(width: 40)
                                         .multilineTextAlignment(.center)
                                 }
-                                .labelsHidden()
                             }
-                            .formRow()
                         }
                         Spacer(minLength: 100)
                     }
@@ -178,3 +176,4 @@ struct EditCourseView: View {
         }
     }
 }
+
