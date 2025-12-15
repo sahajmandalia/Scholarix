@@ -130,7 +130,7 @@ struct EditCourseView: View {
                                         .fontWeight(.semibold)
                                         .foregroundColor(Theme.danger)
                                         .padding(.top, 4)
-                                        .padding(.leading, 40)
+                                        .padding(.leading, 28 + 12) // icon width + spacing
                                 }
                             }
                             

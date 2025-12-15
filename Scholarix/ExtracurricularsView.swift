@@ -265,7 +265,7 @@ struct ActivityCard: View {
         case "Club": return Theme.activityClub
         case "Service": return Color.pink
         case "Award": return Theme.warning
-        case "Work": return Color.blue
+        case "Work": return Theme.info
         default: return Theme.brandSecondary
         }
     }

@@ -359,7 +359,7 @@ struct CourseCard: View {
     var letterGrade: String {
         guard let grade = course.gradePercent else { return "--" }
         switch grade {
-        case 93...110: return "A"
+        case 93...100: return "A"
         case 90..<93: return "A-"
         case 87..<90: return "B+"
         case 83..<87: return "B"
