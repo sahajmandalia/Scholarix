@@ -11,7 +11,7 @@ struct ExtracurricularsView: View {
     var body: some View {
             NavigationStack {
                 ZStack(alignment: .bottom) {
-                    Color(.systemGroupedBackground).ignoresSafeArea()
+                    Theme.backgroundGrouped.ignoresSafeArea()
                     
                     // Content
                     List {
@@ -74,7 +74,7 @@ struct ExtracurricularsView: View {
                         Button(action: { menuManager.open() }) {
                             Image(systemName: "line.3.horizontal")
                                 .font(.system(size: 20, weight: .semibold))
-                                .foregroundColor(.primary)
+                                .foregroundColor(Theme.textPrimary)
                         }
                     }
                     
@@ -82,7 +82,7 @@ struct ExtracurricularsView: View {
                         NavigationLink(destination: SettingsView()) {
                             Image(systemName: "gearshape.fill")
                                 .font(.system(size: 18, weight: .semibold))
-                                .foregroundColor(.primary)
+                                .foregroundColor(Theme.textPrimary)
                         }
                     }
                 }
@@ -101,70 +101,109 @@ struct ExtracurricularsView: View {
     // --- Components ---
     
     var emptyStateView: some View {
-        VStack(spacing: 12) {
-            Image(systemName: "trophy")
-                .font(.system(size: 50))
-                .foregroundColor(.secondary.opacity(0.3))
-            Text("Build Your Profile")
-                .font(.headline)
-            Text("Add clubs, sports, and awards here.")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
+        VStack(spacing: 16) {
+            Image(systemName: "trophy.fill")
+                .font(.system(size: 60, weight: .medium))
+                .foregroundColor(Theme.warning.opacity(0.4))
+            Text("Build Your Profile 🏆")
+                .font(.system(.title3, design: .rounded))
+                .fontWeight(.bold)
+                .foregroundColor(Theme.textPrimary)
+            Text("Add clubs, sports, and awards here to showcase your achievements")
+                .font(.system(.subheadline, design: .rounded))
+                .foregroundColor(Theme.textSecondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 20)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 40)
+        .padding(.vertical, 50)
     }
     
     var bottomActionBar: some View {
-        VStack {
+        VStack(spacing: 0) {
             Spacer()
+            
+            LinearGradient(
+                colors: [Theme.backgroundGrouped.opacity(0), Theme.backgroundGrouped],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .frame(height: 20)
+            
             ZStack {
                 if isSearching {
-                    HStack {
-                        Image(systemName: "magnifyingglass").foregroundColor(.gray)
-                        TextField("Search...", text: $viewModel.searchText)
+                    HStack(spacing: 12) {
+                        Image(systemName: "magnifyingglass")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundColor(Theme.brandPrimary)
+                        
+                        TextField("Search activities...", text: $viewModel.searchText)
+                            .font(.system(.body, design: .rounded))
+                            .foregroundColor(Theme.textPrimary)
                             .submitLabel(.done)
-                        Button(action: { withAnimation { isSearching = false; viewModel.searchText = "" } }) {
-                            Image(systemName: "xmark.circle.fill").foregroundColor(.secondary)
+                        
+                        Button(action: { 
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) { 
+                                isSearching = false
+                                viewModel.searchText = "" 
+                            } 
+                        }) {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.system(size: 20, weight: .semibold))
+                                .foregroundColor(Theme.textSecondary)
                         }
                     }
-                    .padding()
-                    .background(.ultraThinMaterial)
-                    .cornerRadius(20)
-                    .shadow(radius: 10)
-                    .padding()
+                    .padding(.horizontal, 18)
+                    .padding(.vertical, 14)
+                    .background(Theme.cardBackground)
+                    .cornerRadius(16)
+                    .shadow(color: Theme.shadowLight, radius: 10, x: 0, y: 4)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(Theme.brandPrimary.opacity(0.3), lineWidth: 1.5)
+                    )
+                    .padding(.horizontal, 16)
                 } else {
-                    HStack {
+                    HStack(spacing: 12) {
                         Spacer()
-                        Button(action: { withAnimation { isSearching = true } }) {
+                        
+                        Button(action: { 
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) { 
+                                isSearching = true 
+                            } 
+                        }) {
                             Image(systemName: "magnifyingglass")
-                                .font(.title3)
-                                .foregroundColor(.primary)
-                                .padding(12)
-                                .background(.ultraThinMaterial)
+                                .font(.system(size: 18, weight: .semibold))
+                                .foregroundColor(Theme.textPrimary)
+                                .frame(width: 48, height: 48)
+                                .background(Theme.cardBackground)
                                 .clipShape(Circle())
-                                .shadow(radius: 5)
+                                .shadow(color: Theme.shadowLight, radius: 6, x: 0, y: 3)
                         }
                         
                         Button(action: { showingAddSheet = true }) {
-                            HStack(spacing: 8) {
-                                Image(systemName: "plus")
-                                Text("Activity")
+                            HStack(spacing: 10) {
+                                Image(systemName: "plus.circle.fill")
+                                    .font(.system(size: 20, weight: .semibold))
+                                Text("Add Activity")
+                                    .font(.system(.body, design: .rounded))
                                     .fontWeight(.bold)
                             }
                             .foregroundColor(.white)
-                            .padding(.vertical, 12)
                             .padding(.horizontal, 24)
+                            .padding(.vertical, 14)
                             .background(
-                                LinearGradient(colors: [.blue, .purple], startPoint: .topLeading, endPoint: .bottomTrailing)
+                                LinearGradient(colors: [Theme.warning, Color.pink], startPoint: .topLeading, endPoint: .bottomTrailing)
                             )
                             .clipShape(Capsule())
-                            .shadow(color: .blue.opacity(0.4), radius: 8, x: 0, y: 4)
+                            .shadow(color: Theme.warning.opacity(0.4), radius: 10, x: 0, y: 5)
                         }
                     }
-                    .padding()
+                    .padding(.horizontal, 16)
                 }
             }
+            .padding(.bottom, 16)
+            .background(Theme.backgroundGrouped)
         }
     }
 }
@@ -177,29 +216,39 @@ struct ImpactCard: View {
     
     var body: some View {
         HStack(spacing: 0) {
-            statView(title: "Total Hours", value: String(format: "%.0f", hours))
+            statView(title: "Total Hours", value: String(format: "%.0f", hours), icon: "clock.fill")
             Rectangle()
                 .fill(Color.white.opacity(0.2))
-                .frame(width: 1, height: 40)
-            statView(title: "Active", value: "\(active)")
+                .frame(width: 2, height: 50)
+            statView(title: "Active Now", value: "\(active)", icon: "flame.fill")
         }
-        .padding(24)
+        .padding(.horizontal, 24)
+        .padding(.vertical, 28)
         .background(
-            LinearGradient(colors: [.orange, .pink], startPoint: .topLeading, endPoint: .bottomTrailing)
+            LinearGradient(colors: [Theme.warning, Color.pink], startPoint: .topLeading, endPoint: .bottomTrailing)
         )
-        .cornerRadius(24)
-        .shadow(color: .orange.opacity(0.3), radius: 15, x: 0, y: 8)
+        .cornerRadius(20)
+        .shadow(color: Theme.warning.opacity(0.4), radius: 16, x: 0, y: 8)
+        .overlay(
+            RoundedRectangle(cornerRadius: 20)
+                .stroke(Color.white.opacity(0.2), lineWidth: 1)
+        )
     }
     
-    func statView(title: String, value: String) -> some View {
-        VStack(spacing: 4) {
-            Text(title.uppercased())
-                .font(.system(size: 11, weight: .bold, design: .rounded))
+    func statView(title: String, value: String, icon: String) -> some View {
+        VStack(spacing: 8) {
+            Image(systemName: icon)
+                .font(.system(size: 18, weight: .semibold))
                 .foregroundColor(.white.opacity(0.9))
-                .tracking(1)
+            
             Text(value)
-                .font(.system(size: 32, weight: .heavy, design: .rounded))
+                .font(.system(size: 36, weight: .heavy, design: .rounded))
                 .foregroundColor(.white)
+            
+            Text(title.uppercased())
+                .font(.system(size: 10, weight: .bold, design: .rounded))
+                .foregroundColor(.white.opacity(0.85))
+                .tracking(1.2)
         }
         .frame(maxWidth: .infinity)
     }
@@ -212,11 +261,11 @@ struct ActivityCard: View {
     
     var themeColor: Color {
         switch activity.type {
-        case "Sport": return .green
-        case "Club": return .blue
-        case "Service": return .pink
-        case "Award": return .orange
-        default: return .purple
+        case "Sport": return Theme.activitySport
+        case "Club": return Theme.activityClub
+        case "Service": return Color.pink
+        case "Award": return Theme.warning
+        default: return Theme.brandSecondary
         }
     }
     
@@ -231,62 +280,83 @@ struct ActivityCard: View {
     }
     
     var body: some View {
-        HStack(alignment: .top, spacing: 16) {
+        HStack(alignment: .top, spacing: 14) {
             // Icon
             ZStack {
                 Circle()
-                    .fill(themeColor.opacity(0.1))
-                    .frame(width: 44, height: 44)
+                    .fill(themeColor.opacity(0.15))
+                    .frame(width: 50, height: 50)
+                    .overlay(
+                        Circle()
+                            .stroke(themeColor.opacity(0.3), lineWidth: 2)
+                    )
                 Image(systemName: icon)
                     .foregroundColor(themeColor)
-                    .font(.headline)
+                    .font(.system(size: 20, weight: .semibold))
             }
             
             // Content
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 6) {
                 HStack {
                     Text(activity.title)
-                        .font(.system(.headline, design: .rounded))
+                        .font(.system(.body, design: .rounded))
                         .fontWeight(.bold)
-                        .foregroundColor(.primary)
+                        .foregroundColor(Theme.textPrimary)
                     Spacer()
                     if let hours = activity.hours, hours > 0 {
-                        Text("\(Int(hours))h")
-                            .font(.caption2)
-                            .fontWeight(.bold)
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
-                            .background(Color(.systemGray5))
-                            .cornerRadius(6)
+                        HStack(spacing: 4) {
+                            Image(systemName: "clock.fill")
+                                .font(.system(size: 10, weight: .semibold))
+                            Text("\(Int(hours))h")
+                                .font(.system(size: 11, weight: .bold, design: .rounded))
+                        }
+                        .foregroundColor(themeColor)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(themeColor.opacity(0.12))
+                        .cornerRadius(8)
                     }
                 }
                 
                 Text(activity.position)
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .font(.system(.subheadline, design: .rounded))
+                    .fontWeight(.medium)
+                    .foregroundColor(Theme.textSecondary)
                 
-                Text(dateString)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .padding(.top, 2)
+                HStack(spacing: 4) {
+                    Image(systemName: "calendar")
+                        .font(.system(size: 10, weight: .semibold))
+                    Text(dateString)
+                        .font(.system(size: 11, weight: .medium, design: .rounded))
+                }
+                .foregroundColor(Theme.textTertiary)
+                .padding(.top, 2)
             }
             
-            // Menu Button
+            // Menu
             Menu {
-                Button(action: onEdit) { Label("Edit", systemImage: "pencil") }
-                Button(role: .destructive, action: onDelete) { Label("Delete", systemImage: "trash") }
+                Button(action: onEdit) { 
+                    Label("Edit Activity", systemImage: "pencil.circle.fill") 
+                }
+                Button(role: .destructive, action: onDelete) { 
+                    Label("Delete Activity", systemImage: "trash.fill") 
+                }
             } label: {
-                Image(systemName: "ellipsis")
-                    .font(.system(size: 20, weight: .bold))
-                    .foregroundColor(.secondary.opacity(0.6))
-                    .frame(width: 30, height: 30)
-                    .padding(.leading, 4)
+                Image(systemName: "ellipsis.circle.fill")
+                    .font(.system(size: 24, weight: .semibold))
+                    .foregroundColor(Theme.textSecondary.opacity(0.6))
+                    .frame(width: 32, height: 32)
             }
         }
-        .padding(16)
-        .background(Color(.secondarySystemGroupedBackground))
+        .padding(.horizontal, 16)
+        .padding(.vertical, 14)
+        .background(Theme.cardBackground)
         .cornerRadius(16)
-        .shadow(color: .black.opacity(0.03), radius: 5, x: 0, y: 2)
+        .shadow(color: Theme.shadowLight, radius: 6, x: 0, y: 2)
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(Theme.borderSubtle, lineWidth: 0.5)
+        )
         .contentShape(Rectangle())
         .onTapGesture { onEdit() }
     }
