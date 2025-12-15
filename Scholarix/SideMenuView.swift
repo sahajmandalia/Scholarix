@@ -9,87 +9,149 @@ struct SideMenuView: View {
     }
     
     var body: some View {
-        HStack(alignment: .top) {
+        HStack(alignment: .top, spacing: 0) {
             VStack(alignment: .leading, spacing: 0) {
-                // --- Header ---
-                VStack(alignment: .leading, spacing: 12) {
+                // Header with User Info
+                VStack(alignment: .leading, spacing: 16) {
+                    // Avatar
                     ZStack {
                         Circle()
-                            .fill(.white)
-                            .frame(width: 60, height: 60)
+                            .fill(Theme.brandGradient)
+                            .frame(width: 70, height: 70)
+                            .shadow(color: Theme.brandPrimary.opacity(0.3), radius: 8, x: 0, y: 4)
+                        
                         Text(String(userEmail.prefix(1)).uppercased())
-                            .font(.title)
-                            .fontWeight(.bold)
-                            .foregroundColor(.blue)
+                            .font(.system(size: 32, weight: .bold, design: .rounded))
+                            .foregroundColor(.white)
                     }
                     
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Hello,")
-                            .font(.caption)
-                            .foregroundColor(.white.opacity(0.8))
+                    // User Info
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Hey there! 👋")
+                            .font(.system(.caption, design: .rounded))
+                            .fontWeight(.medium)
+                            .foregroundColor(.white.opacity(0.9))
+                            .textCase(.uppercase)
+                            .tracking(0.5)
+                        
                         Text(userEmail)
-                            .font(.headline)
+                            .font(.system(.body, design: .rounded))
+                            .fontWeight(.semibold)
                             .foregroundColor(.white)
                             .lineLimit(1)
+                            .minimumScaleFactor(0.8)
                     }
                 }
-                .padding(.top, 60)
-                .padding(.bottom, 30)
-                .padding(.horizontal)
+                .padding(.top, 65)
+                .padding(.bottom, 35)
+                .padding(.horizontal, 20)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(LinearGradient(colors: [.blue, .purple], startPoint: .topLeading, endPoint: .bottomTrailing))
+                .background(Theme.brandGradient)
                 
-                // --- Menu Items ---
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 10) {
-                        MenuRow(icon: "person.fill", title: "Profile") { menuManager.close() }
-                        MenuRow(icon: "gearshape.fill", title: "Settings") { menuManager.openSettings() }
-                        MenuRow(icon: "doc.text.fill", title: "Resume") { menuManager.close() }
-                        
-                        // --- UPDATED HELP LINK ---
-                        // We use Link() here instead of MenuRow so it opens Safari automatically
-                        Link(destination: URL(string: "https://sites.google.com/view/scholarixapp/about-support")!) {
-                            HStack(spacing: 12) {
-                                Image(systemName: "questionmark.circle.fill")
-                                    .font(.body)
-                                    .frame(width: 24)
-                                    .foregroundColor(.gray)
-                                Text("Help")
-                                    .font(.body)
-                                    .foregroundColor(.primary)
-                                Spacer()
-                            }
-                            .padding(.horizontal)
-                            .padding(.vertical, 10)
+                // Menu Items
+                ScrollView(showsIndicators: false) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        MenuRow(
+                            icon: "person.crop.circle.fill",
+                            title: "Profile",
+                            color: Theme.brandPrimary
+                        ) {
+                            menuManager.close()
                         }
                         
-                        Divider().padding(.vertical)
+                        MenuRow(
+                            icon: "gearshape.fill",
+                            title: "Settings",
+                            color: Theme.textSecondary
+                        ) {
+                            menuManager.openSettings()
+                        }
                         
+                        MenuRow(
+                            icon: "doc.richtext.fill",
+                            title: "Resume",
+                            color: Theme.brandAccent
+                        ) {
+                            menuManager.close()
+                        }
+                        
+                        // Help Link
+                        Link(destination: URL(string: "https://sites.google.com/view/scholarixapp/about-support")!) {
+                            HStack(spacing: 14) {
+                                Image(systemName: "questionmark.circle.fill")
+                                    .font(.system(size: 20, weight: .semibold))
+                                    .foregroundColor(Theme.info)
+                                    .frame(width: 28)
+                                
+                                Text("Help & Support")
+                                    .font(.system(.body, design: .rounded))
+                                    .fontWeight(.medium)
+                                    .foregroundColor(Theme.textPrimary)
+                                
+                                Spacer()
+                                
+                                Image(systemName: "arrow.up.right")
+                                    .font(.caption)
+                                    .foregroundColor(Theme.textTertiary)
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 14)
+                            .background(Theme.cardBackground)
+                            .cornerRadius(12)
+                        }
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        
+                        Divider()
+                            .padding(.vertical, 12)
+                            .padding(.horizontal, 16)
+                        
+                        // Log Out Button
                         Button(action: {
                             try? Auth.auth().signOut()
                             menuManager.close()
                         }) {
-                            HStack(spacing: 12) {
-                                Image(systemName: "arrow.left.square.fill")
-                                    .foregroundColor(.red)
+                            HStack(spacing: 14) {
+                                Image(systemName: "arrow.right.square.fill")
+                                    .font(.system(size: 20, weight: .semibold))
+                                    .foregroundColor(Theme.danger)
+                                    .frame(width: 28)
+                                
                                 Text("Log Out")
-                                    .foregroundColor(.red)
+                                    .font(.system(.body, design: .rounded))
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(Theme.danger)
+                                
+                                Spacer()
                             }
-                            .padding()
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 14)
+                            .background(Theme.danger.opacity(0.1))
+                            .cornerRadius(12)
                         }
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
                     }
-                    .padding(.top)
+                    .padding(.top, 20)
                 }
                 
                 Spacer()
                 
-                Text("Scholarix v1.0")
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
-                    .padding()
+                // App Version Footer
+                HStack(spacing: 6) {
+                    Image(systemName: "sparkles")
+                        .font(.system(size: 10, weight: .semibold))
+                    Text("Scholarix v1.0")
+                        .font(.system(.caption2, design: .rounded))
+                        .fontWeight(.medium)
+                }
+                .foregroundColor(Theme.textTertiary)
+                .padding(.horizontal, 20)
+                .padding(.bottom, 30)
             }
-            .frame(width: 270)
-            .background(Color(.systemBackground))
+            .frame(width: 290)
+            .background(Theme.backgroundPrimary)
+            .shadow(color: Theme.shadowMedium, radius: 20, x: 5, y: 0)
             .edgesIgnoringSafeArea(.vertical)
             
             Spacer()
@@ -100,22 +162,34 @@ struct SideMenuView: View {
 struct MenuRow: View {
     let icon: String
     let title: String
+    let color: Color
     let action: () -> Void
     
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 12) {
+            HStack(spacing: 14) {
                 Image(systemName: icon)
-                    .font(.body)
-                    .frame(width: 24)
-                    .foregroundColor(.gray)
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundColor(color)
+                    .frame(width: 28)
+                
                 Text(title)
-                    .font(.body)
-                    .foregroundColor(.primary)
+                    .font(.system(.body, design: .rounded))
+                    .fontWeight(.medium)
+                    .foregroundColor(Theme.textPrimary)
+                
                 Spacer()
+                
+                Image(systemName: "chevron.right")
+                    .font(.caption)
+                    .foregroundColor(Theme.textTertiary)
             }
-            .padding(.horizontal)
-            .padding(.vertical, 10)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
+            .background(Theme.cardBackground.opacity(0.5))
+            .cornerRadius(12)
         }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 4)
     }
 }
