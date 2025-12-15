@@ -24,71 +24,135 @@ struct VerificationSentView: View {
     let cooldownTimer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     
     var body: some View {
-        VStack(spacing: 25) {
-            Spacer()
+        ZStack {
+            Theme.backgroundGrouped.ignoresSafeArea()
             
-            Image(systemName: "envelope.open.fill")
-                .font(.system(size: 80))
-                .foregroundColor(.green)
-            
-            Text("Verification Link Sent")
-                .font(.largeTitle)
-                .fontWeight(.bold)
-                .multilineTextAlignment(.center)
-            
-            Text("We've sent a verification email to **\(email)**. Please check your inbox and click the link to activate your account.")
-                .font(.body)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 30)
-            
-            Text("This screen will update automatically once verified.")
-                .font(.caption)
-                .foregroundColor(.gray)
-                .italic()
-            
-            // --- Resend Feedback Message ---
-            if let message = resendMessage {
-                Text(message)
-                    .font(.callout)
-                    .foregroundColor(message.contains("Success") ? .green : .red)
+            VStack(spacing: 24) {
+                Spacer()
+                
+                // Success Icon with Animation
+                Image(systemName: "envelope.open.fill")
+                    .font(.system(size: 80, weight: .medium))
+                    .foregroundColor(Theme.success)
+                    .padding(24)
+                    .background(
+                        Circle()
+                            .fill(Theme.success.opacity(0.1))
+                    )
+                    .overlay(
+                        Circle()
+                            .stroke(Theme.success.opacity(0.3), lineWidth: 3)
+                    )
+                
+                VStack(spacing: 10) {
+                    Text("Check Your Email! 📧")
+                        .font(.system(.largeTitle, design: .rounded))
+                        .fontWeight(.bold)
+                        .foregroundColor(Theme.textPrimary)
+                        .multilineTextAlignment(.center)
+                    
+                    VStack(spacing: 8) {
+                        Text("We've sent a verification email to")
+                            .font(.system(.body, design: .rounded))
+                            .foregroundColor(Theme.textSecondary)
+                        Text(email)
+                            .font(.system(.body, design: .rounded))
+                            .fontWeight(.semibold)
+                            .foregroundColor(Theme.brandPrimary)
+                        Text("Click the link to activate your account")
+                            .font(.system(.body, design: .rounded))
+                            .foregroundColor(Theme.textSecondary)
+                    }
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 30)
-            }
-            
-            Spacer()
-            
-            // --- Resend Button with Cooldown ---
-            Button(action: resendVerificationEmail) {
-                if isResending {
-                    ProgressView().progressViewStyle(CircularProgressViewStyle(tint: .blue))
-                } else if timeRemaining > 0 {
-                    Text("Resend in \(timeRemaining)s")
-                        .font(.headline)
-                        .foregroundColor(.gray)
-                } else {
-                    Text("Resend Email")
-                        .font(.headline)
-                        .foregroundColor(.blue)
                 }
+                
+                // Auto-update notice
+                HStack(spacing: 6) {
+                    Image(systemName: "arrow.clockwise")
+                        .font(.caption)
+                    Text("This screen will update automatically")
+                        .font(.system(.caption, design: .rounded))
+                }
+                .foregroundColor(Theme.textTertiary)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .background(Theme.cardBackground)
+                .cornerRadius(8)
+                
+                // Resend Feedback
+                if let message = resendMessage {
+                    HStack(spacing: 8) {
+                        Image(systemName: message.contains("Success") ? "checkmark.circle.fill" : "exclamationmark.circle.fill")
+                            .font(.callout)
+                        Text(message)
+                            .font(.system(.callout, design: .rounded))
+                    }
+                    .foregroundColor(message.contains("Success") ? Theme.success : Theme.danger)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 12)
+                    .background(
+                        (message.contains("Success") ? Theme.success : Theme.danger).opacity(0.1)
+                    )
+                    .cornerRadius(12)
+                }
+                
+                Spacer()
+                
+                VStack(spacing: 16) {
+                    // Resend Button
+                    Button(action: resendVerificationEmail) {
+                        HStack(spacing: 8) {
+                            if isResending {
+                                ProgressView()
+                                    .progressViewStyle(CircularProgressViewStyle(tint: Theme.brandPrimary))
+                                    .scaleEffect(0.9)
+                            } else if timeRemaining > 0 {
+                                Image(systemName: "clock.fill")
+                                    .font(.system(size: 16, weight: .semibold))
+                                Text("Resend in \(timeRemaining)s")
+                                    .font(.system(.body, design: .rounded))
+                                    .fontWeight(.semibold)
+                            } else {
+                                Image(systemName: "arrow.counterclockwise")
+                                    .font(.system(size: 16, weight: .semibold))
+                                Text("Resend Email")
+                                    .font(.system(.body, design: .rounded))
+                                    .fontWeight(.semibold)
+                            }
+                        }
+                        .foregroundColor(isResending || timeRemaining > 0 ? Theme.textSecondary : Theme.brandPrimary)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(Theme.cardBackground)
+                        .cornerRadius(14)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 14)
+                                .stroke(Theme.borderSubtle, lineWidth: 1)
+                        )
+                    }
+                    .disabled(isResending || timeRemaining > 0)
+                    
+                    // Return to Login
+                    Button(action: { try? Auth.auth().signOut() }) {
+                        HStack(spacing: 8) {
+                            Image(systemName: "arrow.left.circle.fill")
+                                .font(.system(size: 18, weight: .semibold))
+                            Text("Return to Login")
+                                .font(.system(.body, design: .rounded))
+                                .fontWeight(.bold)
+                        }
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background(Theme.brandGradient)
+                        .cornerRadius(16)
+                        .shadow(color: Theme.brandPrimary.opacity(0.4), radius: 12, x: 0, y: 6)
+                    }
+                }
+                .padding(.horizontal, 30)
+                .padding(.bottom, 40)
             }
-            .disabled(isResending || timeRemaining > 0)
-            .padding(.top, -10)
-            
-            // Return to Login Button
-            Button(action: {
-                try? Auth.auth().signOut()
-            }) {
-                Text("Return to Login")
-                    .font(.headline)
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.blue)
-                    .cornerRadius(15)
-            }
-            .padding(.horizontal, 30)
-            .padding(.bottom, 50)
         }
         .navigationBarHidden(true)
         

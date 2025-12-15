@@ -7,50 +7,86 @@ struct PrivacyAgreementView: View {
     
     var body: some View {
         ZStack {
-            Color(.systemGroupedBackground).ignoresSafeArea()
+            Theme.backgroundGrouped.ignoresSafeArea()
             
-            VStack(spacing: 30) {
+            VStack(spacing: 28) {
                 Spacer()
                 
+                // Privacy Icon
                 Image(systemName: "hand.raised.fill")
-                    .font(.system(size: 60))
-                    .foregroundColor(.blue)
+                    .font(.system(size: 70, weight: .medium))
+                    .foregroundColor(Theme.brandPrimary)
+                    .padding(24)
+                    .background(
+                        Circle()
+                            .fill(Theme.brandPrimary.opacity(0.1))
+                    )
+                    .overlay(
+                        Circle()
+                            .stroke(Theme.brandPrimary.opacity(0.2), lineWidth: 2)
+                    )
                 
-                Text("Privacy & Terms")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-                
-                Text("Before you start using Scholarix, please review and agree to our Privacy Policy.")
-                    .multilineTextAlignment(.center)
-                    .foregroundColor(.secondary)
-                    .padding(.horizontal)
-                
-                // Policy Link
-                Link(destination: URL(string: "https://www.sites.google.com/scholarixapp/legal")!) { // Replace with actual URL
-                    HStack {
-                        Text("Read Privacy Policy")
-                            .fontWeight(.semibold)
-                        Image(systemName: "arrow.up.right.square")
-                    }
-                    .foregroundColor(.blue)
+                VStack(spacing: 10) {
+                    Text("Privacy & Terms 🔒")
+                        .font(.system(.largeTitle, design: .rounded))
+                        .fontWeight(.bold)
+                        .foregroundColor(Theme.textPrimary)
+                    
+                    Text("Before you start using Scholarix, please review and agree to our Privacy Policy")
+                        .font(.system(.body, design: .rounded))
+                        .foregroundColor(Theme.textSecondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 30)
                 }
-                .padding()
-                .background(Color.blue.opacity(0.1))
-                .cornerRadius(10)
+                
+                // Policy Link Card
+                Link(destination: URL(string: "https://www.sites.google.com/scholarixapp/legal")!) {
+                    HStack(spacing: 12) {
+                        Image(systemName: "doc.text.fill")
+                            .font(.system(size: 20, weight: .semibold))
+                        Text("Read Privacy Policy")
+                            .font(.system(.body, design: .rounded))
+                            .fontWeight(.semibold)
+                        Spacer()
+                        Image(systemName: "arrow.up.right")
+                            .font(.system(size: 16, weight: .semibold))
+                    }
+                    .foregroundColor(Theme.brandPrimary)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 16)
+                    .background(Theme.cardBackground)
+                    .cornerRadius(14)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 14)
+                            .stroke(Theme.brandPrimary.opacity(0.3), lineWidth: 2)
+                    )
+                    .shadow(color: Theme.shadowLight, radius: 6, x: 0, y: 2)
+                }
+                .padding(.horizontal, 30)
                 
                 Spacer()
                 
                 // Checkbox
                 Button(action: { isChecked.toggle() }) {
-                    HStack {
+                    HStack(spacing: 12) {
                         Image(systemName: isChecked ? "checkmark.square.fill" : "square")
-                            .font(.title2)
-                            .foregroundColor(isChecked ? .blue : .gray)
+                            .font(.system(size: 28, weight: .semibold))
+                            .foregroundColor(isChecked ? Theme.success : Theme.textSecondary)
                         Text("I agree to the Privacy Policy")
-                            .foregroundColor(.primary)
+                            .font(.system(.body, design: .rounded))
+                            .fontWeight(.medium)
+                            .foregroundColor(Theme.textPrimary)
                     }
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 16)
+                    .background(isChecked ? Theme.success.opacity(0.1) : Theme.cardBackground)
+                    .cornerRadius(14)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 14)
+                            .stroke(isChecked ? Theme.success : Theme.borderSubtle, lineWidth: 1.5)
+                    )
                 }
-                .padding(.bottom, 10)
+                .padding(.horizontal, 30)
                 
                 // Continue Button
                 Button(action: {
@@ -60,13 +96,28 @@ struct PrivacyAgreementView: View {
                         showingAlert = true
                     }
                 }) {
-                    Text("Continue")
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(isChecked ? Color.blue : Color.gray)
-                        .cornerRadius(15)
+                    HStack(spacing: 8) {
+                        Image(systemName: "arrow.right.circle.fill")
+                            .font(.system(size: 18, weight: .semibold))
+                        Text("Continue to Scholarix")
+                            .font(.system(.body, design: .rounded))
+                            .fontWeight(.bold)
+                    }
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 16)
+                    .background(
+                        isChecked ? Theme.brandGradient : LinearGradient(
+                            colors: [Theme.buttonDisabled, Theme.buttonDisabled],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .cornerRadius(16)
+                    .shadow(
+                        color: isChecked ? Theme.brandPrimary.opacity(0.4) : Theme.shadowLight,
+                        radius: 12, x: 0, y: 6
+                    )
                 }
                 .disabled(!isChecked)
                 .padding(.horizontal, 30)
