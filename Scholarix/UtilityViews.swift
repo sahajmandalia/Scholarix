@@ -123,9 +123,9 @@ struct FloatingSaveButton: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 16)
                 .background(
-                    isDisabled ? Theme.buttonDisabled : Theme.brandGradient
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .fill(isDisabled ? AnyShapeStyle(Theme.buttonDisabled) : AnyShapeStyle(Theme.brandGradient))
                 )
-                .cornerRadius(16)
                 .shadow(color: isDisabled ? Theme.shadowLight : Theme.brandPrimary.opacity(0.4), radius: 12, x: 0, y: 6)
             }
             .disabled(isDisabled)

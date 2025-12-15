@@ -375,12 +375,12 @@ struct CourseCard: View {
             
             if let grade = course.gradePercent {
                 VStack(spacing: 2) {
-                    Text("\(grade, specifier: "%.0f")")
+                    Text("\(grade, specifier: "%.0f")%")
                         .font(.system(size: 28, weight: .heavy, design: .rounded))
                         .foregroundColor(Theme.gradeColor(for: grade))
-                    Text("%")
-                        .font(.system(size: 12, weight: .bold, design: .rounded))
-                        .foregroundColor(Theme.gradeColor(for: grade).opacity(0.7))
+//                    Text("%")
+//                        .font(.system(size: 12, weight: .bold, design: .rounded))
+//                        .foregroundColor(Theme.gradeColor(for: grade).opacity(0.7))
                 }
             } else {
                 Text("--")

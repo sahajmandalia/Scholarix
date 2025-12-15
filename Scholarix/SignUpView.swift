@@ -176,7 +176,12 @@ struct SignUpView: View {
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 16)
                         .background(
-                            (isSigningUp || email.isEmpty || password.isEmpty) ? Theme.buttonDisabled : Theme.brandGradient
+                            RoundedRectangle(
+                                cornerRadius: 16,
+                                style: .continuous
+                            ).fill(isSigningUp || email.isEmpty || password.isEmpty ?
+                                   AnyShapeStyle(Theme.buttonDisabled) :
+                                    AnyShapeStyle(Theme.brandGradient))
                         )
                         .cornerRadius(16)
                         .shadow(

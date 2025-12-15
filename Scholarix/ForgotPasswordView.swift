@@ -82,7 +82,8 @@ struct ForgotPasswordView: View {
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 16)
                         .background(
-                            email.isEmpty ? Theme.buttonDisabled : Theme.brandGradient
+                            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                .fill(AnyShapeStyle(Theme.brandGradient))
                         )
                         .cornerRadius(16)
                         .shadow(

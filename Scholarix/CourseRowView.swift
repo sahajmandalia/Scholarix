@@ -50,9 +50,14 @@ struct CourseRowView: View {
             if let grade = course.gradePercent {
                 VStack(alignment: .trailing, spacing: 0) {
                     Text("\(grade, specifier: "%.1f")%")
-                        .font(.system(.title3, design: .rounded))
+                        .font(.system(.title, design: .rounded))
                         .fontWeight(.bold)
                         .foregroundColor(grade >= 90 ? .green : (grade >= 80 ? .blue : .orange))
+                        // Why is this here?
+                        .font(.system(.title2, design: .rounded))
+                        .fontWeight(.bold)
+                        .foregroundColor(grade >= 90 ? .green : (grade >= 80 ? .blue : .orange))
+                        .baselineOffset(0)
                     
                     Text("Current")
                         .font(.caption2)
@@ -70,3 +75,4 @@ struct CourseRowView: View {
         // Note: The List/Parent view handles the swipe actions
     }
 }
+
