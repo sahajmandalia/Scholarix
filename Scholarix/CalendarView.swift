@@ -3,16 +3,7 @@ import SwiftUI
 // --- UI HELPER ---
 struct ColorHelper {
     static func colorForType(_ type: String) -> Color {
-        switch type {
-        case "Test": return .red
-        case "Project": return .purple
-        case "Essay": return .orange
-        case "Application": return .pink
-        case "Event": return .yellow
-        case "Club": return .mint
-        case "Sport": return .green
-        default: return .blue
-        }
+        return Theme.activityColor(for: type)
     }
 }
 

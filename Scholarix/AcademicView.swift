@@ -36,7 +36,7 @@ struct AcademicView: View {
                     .padding(.horizontal)
                     .padding(.top, 10)
                     .padding(.bottom, 10)
-                    .background(Color(.systemGroupedBackground))
+                    .background(Theme.backgroundGrouped)
                     
                     if selectedTab == 0 {
                         coursesList
@@ -80,13 +80,13 @@ struct AcademicView: View {
                             Button(action: { withAnimation { isListMode.toggle() } }) {
                                 Image(systemName: isListMode ? "calendar" : "list.bullet")
                                     .font(.system(size: 18, weight: .semibold))
-                                    .foregroundColor(.primary)
+                                    .foregroundColor(Theme.textPrimary)
                             }
                         }
                         NavigationLink(destination: SettingsView()) {
                             Image(systemName: "gearshape.fill")
                                 .font(.system(size: 18, weight: .semibold))
-                                .foregroundColor(.primary)
+                                .foregroundColor(Theme.textPrimary)
                         }
                     }
                 }
@@ -210,54 +210,91 @@ struct AcademicView: View {
     }
     
     var bottomActionBar: some View {
-        VStack {
+        VStack(spacing: 0) {
             Spacer()
+            
+            // Gradient fade
+            LinearGradient(
+                colors: [Theme.backgroundGrouped.opacity(0), Theme.backgroundGrouped],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .frame(height: 20)
+            
             ZStack {
                 if isSearching {
-                    HStack {
-                        Image(systemName: "magnifyingglass").foregroundColor(.gray)
-                        TextField("Search...", text: $viewModel.searchText).submitLabel(.done)
-                        Button(action: { withAnimation { isSearching = false; viewModel.searchText = "" } }) {
-                            Image(systemName: "xmark.circle.fill").foregroundColor(.secondary)
+                    HStack(spacing: 12) {
+                        Image(systemName: "magnifyingglass")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundColor(Theme.brandPrimary)
+                        
+                        TextField("Search courses or tasks...", text: $viewModel.searchText)
+                            .font(.system(.body, design: .rounded))
+                            .foregroundColor(Theme.textPrimary)
+                            .submitLabel(.done)
+                        
+                        Button(action: { 
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) { 
+                                isSearching = false
+                                viewModel.searchText = "" 
+                            } 
+                        }) {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.system(size: 20, weight: .semibold))
+                                .foregroundColor(Theme.textSecondary)
                         }
                     }
-                    .padding()
-                    .background(.ultraThinMaterial)
-                    .cornerRadius(20)
-                    .shadow(radius: 10)
-                    .padding()
+                    .padding(.horizontal, 18)
+                    .padding(.vertical, 14)
+                    .background(Theme.cardBackground)
+                    .cornerRadius(16)
+                    .shadow(color: Theme.shadowLight, radius: 10, x: 0, y: 4)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(Theme.brandPrimary.opacity(0.3), lineWidth: 1.5)
+                    )
+                    .padding(.horizontal, 16)
                 } else {
-                    HStack {
+                    HStack(spacing: 12) {
                         Spacer()
-                        Button(action: { withAnimation { isSearching = true } }) {
+                        
+                        // Search Button
+                        Button(action: { 
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) { 
+                                isSearching = true 
+                            } 
+                        }) {
                             Image(systemName: "magnifyingglass")
-                                .font(.title3)
-                                .foregroundColor(.primary)
-                                .padding(12)
-                                .background(.ultraThinMaterial)
+                                .font(.system(size: 18, weight: .semibold))
+                                .foregroundColor(Theme.textPrimary)
+                                .frame(width: 48, height: 48)
+                                .background(Theme.cardBackground)
                                 .clipShape(Circle())
-                                .shadow(radius: 5)
+                                .shadow(color: Theme.shadowLight, radius: 6, x: 0, y: 3)
                         }
                         
+                        // Add Button
                         Button(action: { showingAddSheet = true }) {
-                            HStack(spacing: 8) {
-                                Image(systemName: "plus")
-                                Text(selectedTab == 0 ? "Course" : "Task")
+                            HStack(spacing: 10) {
+                                Image(systemName: "plus.circle.fill")
+                                    .font(.system(size: 20, weight: .semibold))
+                                Text(selectedTab == 0 ? "Add Course" : "Add Task")
+                                    .font(.system(.body, design: .rounded))
                                     .fontWeight(.bold)
                             }
                             .foregroundColor(.white)
-                            .padding(.vertical, 12)
                             .padding(.horizontal, 24)
-                            .background(
-                                LinearGradient(colors: [.blue, .purple], startPoint: .topLeading, endPoint: .bottomTrailing)
-                            )
+                            .padding(.vertical, 14)
+                            .background(Theme.brandGradient)
                             .clipShape(Capsule())
-                            .shadow(color: .blue.opacity(0.4), radius: 8, x: 0, y: 4)
+                            .shadow(color: Theme.brandPrimary.opacity(0.4), radius: 10, x: 0, y: 5)
                         }
                     }
-                    .padding()
+                    .padding(.horizontal, 16)
                 }
             }
+            .padding(.bottom, 16)
+            .background(Theme.backgroundGrouped)
         }
     }
 }
@@ -270,29 +307,37 @@ struct GPACard: View {
     
     var body: some View {
         HStack(spacing: 0) {
-            statView(title: "Weighted", value: weighted)
+            statView(title: "Weighted GPA", value: weighted, icon: "star.fill")
             Rectangle()
                 .fill(Color.white.opacity(0.2))
-                .frame(width: 1, height: 40)
-            statView(title: "Unweighted", value: unweighted)
+                .frame(width: 2, height: 50)
+            statView(title: "Unweighted GPA", value: unweighted, icon: "graduationcap.fill")
         }
-        .padding(24)
-        .background(
-            LinearGradient(colors: [Color.blue, Color.purple], startPoint: .topLeading, endPoint: .bottomTrailing)
+        .padding(.horizontal, 24)
+        .padding(.vertical, 28)
+        .background(Theme.brandGradient)
+        .cornerRadius(20)
+        .shadow(color: Theme.brandPrimary.opacity(0.4), radius: 16, x: 0, y: 8)
+        .overlay(
+            RoundedRectangle(cornerRadius: 20)
+                .stroke(Color.white.opacity(0.2), lineWidth: 1)
         )
-        .cornerRadius(24)
-        .shadow(color: .blue.opacity(0.3), radius: 15, x: 0, y: 8)
     }
     
-    func statView(title: String, value: String) -> some View {
-        VStack(spacing: 4) {
-            Text(title.uppercased())
-                .font(.system(size: 11, weight: .bold, design: .rounded))
-                .foregroundColor(.white.opacity(0.8))
-                .tracking(1)
+    func statView(title: String, value: String, icon: String) -> some View {
+        VStack(spacing: 8) {
+            Image(systemName: icon)
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundColor(.white.opacity(0.9))
+            
             Text(value)
-                .font(.system(size: 32, weight: .heavy, design: .rounded))
+                .font(.system(size: 36, weight: .heavy, design: .rounded))
                 .foregroundColor(.white)
+            
+            Text(title.uppercased())
+                .font(.system(size: 10, weight: .bold, design: .rounded))
+                .foregroundColor(.white.opacity(0.85))
+                .tracking(1.2)
         }
         .frame(maxWidth: .infinity)
     }
@@ -304,51 +349,68 @@ struct CourseCard: View {
     let onDelete: () -> Void
     
     var body: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 6) {
+        HStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 8) {
                 Text(course.name)
-                    .font(.system(.headline, design: .rounded))
+                    .font(.system(.body, design: .rounded))
                     .fontWeight(.bold)
-                    .foregroundColor(.primary)
+                    .foregroundColor(Theme.textPrimary)
                 
-                Text(course.courseLevel)
-                    .font(.caption)
-                    .fontWeight(.semibold)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 3)
-                    .background(Color.blue.opacity(0.1))
-                    .foregroundColor(.blue)
-                    .cornerRadius(6)
+                HStack(spacing: 8) {
+                    Text(course.courseLevel)
+                        .font(.system(size: 11, weight: .bold, design: .rounded))
+                        .foregroundColor(Theme.brandPrimary)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 4)
+                        .background(Theme.brandPrimary.opacity(0.12))
+                        .cornerRadius(8)
+                    
+                    Text("Grade \(course.gradeLevel)")
+                        .font(.system(size: 11, weight: .semibold, design: .rounded))
+                        .foregroundColor(Theme.textSecondary)
+                }
             }
             
             Spacer()
             
             if let grade = course.gradePercent {
-                Text("\(grade, specifier: "%.1f")%")
-                    .font(.system(.title3, design: .rounded))
-                    .fontWeight(.bold)
-                    .foregroundColor(grade >= 90 ? .green : (grade >= 80 ? .blue : .orange))
+                VStack(spacing: 2) {
+                    Text("\(grade, specifier: "%.0f")")
+                        .font(.system(size: 28, weight: .heavy, design: .rounded))
+                        .foregroundColor(Theme.gradeColor(for: grade))
+                    Text("%")
+                        .font(.system(size: 12, weight: .bold, design: .rounded))
+                        .foregroundColor(Theme.gradeColor(for: grade).opacity(0.7))
+                }
             } else {
                 Text("--")
-                    .font(.title3)
-                    .foregroundColor(.secondary)
+                    .font(.system(size: 24, weight: .bold, design: .rounded))
+                    .foregroundColor(Theme.textTertiary)
             }
             
             Menu {
-                Button(action: onEdit) { Label("Edit", systemImage: "pencil") }
-                Button(role: .destructive, action: onDelete) { Label("Delete", systemImage: "trash") }
+                Button(action: onEdit) { 
+                    Label("Edit Course", systemImage: "pencil.circle.fill") 
+                }
+                Button(role: .destructive, action: onDelete) { 
+                    Label("Delete Course", systemImage: "trash.fill") 
+                }
             } label: {
-                Image(systemName: "ellipsis")
-                    .font(.system(size: 20, weight: .bold))
-                    .foregroundColor(.secondary.opacity(0.6))
-                    .frame(width: 30, height: 30)
-                    .padding(.leading, 8)
+                Image(systemName: "ellipsis.circle.fill")
+                    .font(.system(size: 24, weight: .semibold))
+                    .foregroundColor(Theme.textSecondary.opacity(0.6))
+                    .frame(width: 32, height: 32)
             }
         }
-        .padding(16)
-        .background(Color(.secondarySystemGroupedBackground))
+        .padding(.horizontal, 16)
+        .padding(.vertical, 14)
+        .background(Theme.cardBackground)
         .cornerRadius(16)
-        .shadow(color: .black.opacity(0.03), radius: 5, x: 0, y: 2)
+        .shadow(color: Theme.shadowLight, radius: 6, x: 0, y: 2)
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(Theme.borderSubtle, lineWidth: 0.5)
+        )
         .contentShape(Rectangle())
         .onTapGesture { onEdit() }
     }
@@ -361,57 +423,73 @@ struct TaskRowCard: View {
     var onDelete: (() -> Void)? = nil
     
     var body: some View {
-        HStack {
-            Button(action: { withAnimation { viewModel.toggleCompletion(deadline: deadline) } }) {
+        HStack(spacing: 12) {
+            // Completion Button
+            Button(action: { withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) { 
+                viewModel.toggleCompletion(deadline: deadline) 
+            }}) {
                 Image(systemName: deadline.isCompleted ? "checkmark.circle.fill" : "circle")
-                    .font(.title2)
-                    .foregroundColor(deadline.isCompleted ? .green : .secondary.opacity(0.5))
+                    .font(.system(size: 28, weight: .semibold))
+                    .foregroundColor(deadline.isCompleted ? Theme.success : Theme.textSecondary.opacity(0.4))
             }
-            .padding(.trailing, 8)
-            .buttonStyle(PlainButtonStyle()) // Prevents button from hijacking list tap
+            .buttonStyle(PlainButtonStyle())
             
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 6) {
                 Text(deadline.title)
                     .font(.system(.body, design: .rounded))
-                    .fontWeight(.medium)
+                    .fontWeight(.semibold)
                     .strikethrough(deadline.isCompleted)
-                    .foregroundColor(deadline.isCompleted ? .secondary : .primary)
+                    .foregroundColor(deadline.isCompleted ? Theme.textSecondary : Theme.textPrimary)
                 
-                HStack(spacing: 6) {
+                HStack(spacing: 8) {
+                    // Type Badge
                     Text(deadline.type.uppercased())
-                        .font(.system(size: 9, weight: .bold))
-                        .foregroundColor(.secondary)
+                        .font(.system(size: 9, weight: .bold, design: .rounded))
+                        .foregroundColor(Theme.activityColor(for: deadline.type))
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 3)
+                        .background(Theme.activityColor(for: deadline.type).opacity(0.15))
+                        .cornerRadius(6)
                     
-                    Text("•")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                    
-                    Text(deadline.dueDate, style: .date)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                    // Date
+                    HStack(spacing: 4) {
+                        Image(systemName: "calendar")
+                            .font(.system(size: 10, weight: .semibold))
+                        Text(deadline.dueDate, style: .date)
+                            .font(.system(size: 11, weight: .medium, design: .rounded))
+                    }
+                    .foregroundColor(Theme.textSecondary)
                 }
             }
             
             Spacer()
             
-            // 3-Dots Menu
+            // Menu
             Menu {
-                Button(action: onEdit) { Label("Edit", systemImage: "pencil") }
+                Button(action: onEdit) { 
+                    Label("Edit Task", systemImage: "pencil.circle.fill") 
+                }
                 if let onDelete = onDelete {
-                    Button(role: .destructive, action: onDelete) { Label("Delete", systemImage: "trash") }
+                    Button(role: .destructive, action: onDelete) { 
+                        Label("Delete Task", systemImage: "trash.fill") 
+                    }
                 }
             } label: {
-                Image(systemName: "ellipsis")
-                    .font(.system(size: 20, weight: .bold))
-                    .foregroundColor(.secondary.opacity(0.6))
-                    .frame(width: 30, height: 30)
-                    .padding(.leading, 8)
+                Image(systemName: "ellipsis.circle.fill")
+                    .font(.system(size: 24, weight: .semibold))
+                    .foregroundColor(Theme.textSecondary.opacity(0.6))
+                    .frame(width: 32, height: 32)
             }
         }
-        .padding(16)
-        .background(Color(.secondarySystemGroupedBackground))
+        .padding(.horizontal, 16)
+        .padding(.vertical, 14)
+        .background(Theme.cardBackground)
         .cornerRadius(16)
-        .shadow(color: .black.opacity(0.03), radius: 5, x: 0, y: 2)
+        .shadow(color: Theme.shadowLight, radius: 6, x: 0, y: 2)
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(deadline.isCompleted ? Theme.success.opacity(0.3) : Theme.borderSubtle, lineWidth: deadline.isCompleted ? 1.5 : 0.5)
+        )
         .contentShape(Rectangle())
         .onTapGesture { onEdit() }
     }
