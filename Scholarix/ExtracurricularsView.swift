@@ -265,6 +265,7 @@ struct ActivityCard: View {
         case "Club": return Theme.activityClub
         case "Service": return Color.pink
         case "Award": return Theme.warning
+        case "Work": return Theme.info
         default: return Theme.brandSecondary
         }
     }
@@ -275,95 +276,198 @@ struct ActivityCard: View {
         case "Club": return "person.3.fill"
         case "Service": return "heart.fill"
         case "Award": return "rosette"
+        case "Work": return "briefcase.fill"
         default: return "star.fill"
         }
     }
     
+    var durationString: String {
+        let start = activity.startDate.formatted(date: .abbreviated, time: .omitted)
+        let end = activity.endDate?.formatted(date: .abbreviated, time: .omitted) ?? "Present"
+        return "\(start) - \(end)"
+    }
+    
+    var isOngoing: Bool {
+        return activity.endDate == nil
+    }
+    
     var body: some View {
-        HStack(alignment: .top, spacing: 14) {
-            // Icon
-            ZStack {
-                Circle()
-                    .fill(themeColor.opacity(0.15))
-                    .frame(width: 50, height: 50)
-                    .overlay(
-                        Circle()
-                            .stroke(themeColor.opacity(0.3), lineWidth: 2)
-                    )
-                Image(systemName: icon)
-                    .foregroundColor(themeColor)
-                    .font(.system(size: 20, weight: .semibold))
-            }
-            
-            // Content
-            VStack(alignment: .leading, spacing: 6) {
-                HStack {
+        VStack(alignment: .leading, spacing: 0) {
+            // Top section with icon and main info
+            HStack(alignment: .top, spacing: 14) {
+                // Icon
+                ZStack {
+                    Circle()
+                        .fill(themeColor.opacity(0.15))
+                        .frame(width: 56, height: 56)
+                        .overlay(
+                            Circle()
+                                .stroke(themeColor.opacity(0.3), lineWidth: 2)
+                        )
+                    Image(systemName: icon)
+                        .foregroundColor(themeColor)
+                        .font(.system(size: 24, weight: .semibold))
+                }
+                
+                // Content
+                VStack(alignment: .leading, spacing: 8) {
                     Text(activity.title)
-                        .font(.system(.body, design: .rounded))
+                        .font(.system(.title3, design: .rounded))
                         .fontWeight(.bold)
                         .foregroundColor(Theme.textPrimary)
-                    Spacer()
-                    if let hours = activity.hours, hours > 0 {
+                        .lineLimit(2)
+                    
+                    Text(activity.position)
+                        .font(.system(.subheadline, design: .rounded))
+                        .fontWeight(.semibold)
+                        .foregroundColor(Theme.textSecondary)
+                    
+                    HStack(spacing: 8) {
+                        // Type badge
                         HStack(spacing: 4) {
-                            Image(systemName: "clock.fill")
+                            Image(systemName: "tag.fill")
                                 .font(.system(size: 10, weight: .semibold))
-                            Text("\(Int(hours))h")
-                                .font(.system(size: 11, weight: .bold, design: .rounded))
+                            Text(activity.type)
+                                .font(.system(size: 12, weight: .bold, design: .rounded))
                         }
                         .foregroundColor(themeColor)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(themeColor.opacity(0.12))
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(themeColor.opacity(0.15))
                         .cornerRadius(8)
+                        
+                        // Status badge for ongoing activities
+                        if isOngoing {
+                            HStack(spacing: 4) {
+                                Circle()
+                                    .fill(Theme.success)
+                                    .frame(width: 6, height: 6)
+                                Text("Active")
+                                    .font(.system(size: 12, weight: .bold, design: .rounded))
+                            }
+                            .foregroundColor(Theme.success)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
+                            .background(Theme.success.opacity(0.15))
+                            .cornerRadius(8)
+                        }
                     }
                 }
                 
-                Text(activity.position)
-                    .font(.system(.subheadline, design: .rounded))
-                    .fontWeight(.medium)
-                    .foregroundColor(Theme.textSecondary)
-                
-                HStack(spacing: 4) {
-                    Image(systemName: "calendar")
-                        .font(.system(size: 10, weight: .semibold))
-                    Text(dateString)
-                        .font(.system(size: 11, weight: .medium, design: .rounded))
+                Spacer()
+            }
+            .padding(16)
+            
+            // Middle section with stats
+            HStack(spacing: 0) {
+                // Hours stat
+                if let hours = activity.hours, hours > 0 {
+                    VStack(spacing: 4) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "clock.fill")
+                                .font(.system(size: 14, weight: .semibold))
+                            Text("\(Int(hours))")
+                                .font(.system(size: 24, weight: .heavy, design: .rounded))
+                        }
+                        .foregroundColor(themeColor)
+                        
+                        Text("HOURS")
+                            .font(.system(size: 10, weight: .bold, design: .rounded))
+                            .foregroundColor(Theme.textSecondary)
+                            .tracking(0.8)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .background(themeColor.opacity(0.08))
+                    
+                    Divider()
                 }
-                .foregroundColor(Theme.textTertiary)
-                .padding(.top, 2)
+                
+                // Duration stat
+                VStack(spacing: 4) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "calendar")
+                            .font(.system(size: 14, weight: .semibold))
+                        Text(durationString)
+                            .font(.system(size: 11, weight: .bold, design: .rounded))
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.8)
+                    }
+                    .foregroundColor(Theme.textPrimary)
+                    
+                    Text("TIMELINE")
+                        .font(.system(size: 10, weight: .bold, design: .rounded))
+                        .foregroundColor(Theme.textSecondary)
+                        .tracking(0.8)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .background(Theme.textSecondary.opacity(0.05))
             }
             
-            // Menu
-            Menu {
-                Button(action: onEdit) { 
-                    Label("Edit Activity", systemImage: "pencil.circle.fill") 
+            // Description section (if available)
+            if let description = activity.description, !description.isEmpty {
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "text.alignleft")
+                            .font(.system(size: 12, weight: .semibold))
+                        Text("Description")
+                            .font(.system(size: 12, weight: .bold, design: .rounded))
+                    }
+                    .foregroundColor(Theme.textSecondary)
+                    
+                    Text(description)
+                        .font(.system(size: 14, weight: .regular, design: .rounded))
+                        .foregroundColor(Theme.textPrimary)
+                        .lineLimit(3)
                 }
-                Button(role: .destructive, action: onDelete) { 
-                    Label("Delete Activity", systemImage: "trash.fill") 
-                }
-            } label: {
-                Image(systemName: "ellipsis.circle.fill")
-                    .font(.system(size: 24, weight: .semibold))
-                    .foregroundColor(Theme.textSecondary.opacity(0.6))
-                    .frame(width: 32, height: 32)
+                .padding(16)
+                .background(Theme.backgroundTertiary.opacity(0.5))
             }
+            
+            // Bottom section with actions
+            Divider()
+            
+            HStack(spacing: 16) {
+                Button(action: onEdit) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "pencil.circle.fill")
+                            .font(.system(size: 16, weight: .semibold))
+                        Text("Edit")
+                            .font(.system(size: 14, weight: .semibold, design: .rounded))
+                    }
+                    .foregroundColor(Theme.warning)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
+                    .background(Theme.warning.opacity(0.1))
+                    .cornerRadius(10)
+                }
+                .buttonStyle(PlainButtonStyle())
+                
+                Button(action: onDelete) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "trash.circle.fill")
+                            .font(.system(size: 16, weight: .semibold))
+                        Text("Delete")
+                            .font(.system(size: 14, weight: .semibold, design: .rounded))
+                    }
+                    .foregroundColor(Theme.danger)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
+                    .background(Theme.danger.opacity(0.1))
+                    .cornerRadius(10)
+                }
+                .buttonStyle(PlainButtonStyle())
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 14)
         .background(Theme.cardBackground)
         .cornerRadius(16)
-        .shadow(color: Theme.shadowLight, radius: 6, x: 0, y: 2)
+        .shadow(color: Theme.shadowMedium, radius: 8, x: 0, y: 3)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
                 .stroke(Theme.borderSubtle, lineWidth: 0.5)
         )
-        .contentShape(Rectangle())
-        .onTapGesture { onEdit() }
-    }
-    
-    var dateString: String {
-        let start = activity.startDate.formatted(date: .abbreviated, time: .omitted)
-        let end = activity.endDate?.formatted(date: .abbreviated, time: .omitted) ?? "Present"
-        return "\(start) - \(end)"
     }
 }

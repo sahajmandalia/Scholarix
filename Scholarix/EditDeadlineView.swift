@@ -66,21 +66,27 @@ struct EditDeadlineView: View {
                         
                         // Card 1: Details
                         FormCard(title: "TASK DETAILS") {
-                            HStack {
+                            HStack(spacing: 12) {
                                 Image(systemName: "pencil.and.outline")
                                     .foregroundColor(.orange)
-                                    .frame(width: 24)
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .frame(width: 28, alignment: .center)
                                 TextField("Title", text: $title)
+                                    .font(.system(.body, design: .rounded))
+                                    .foregroundColor(Theme.textPrimary)
                             }
-                            .formRow()
+                            .padding(.vertical, 8)
                             
                             Divider()
                             
-                            HStack {
+                            HStack(spacing: 12) {
                                 Image(systemName: "tag")
                                     .foregroundColor(.gray)
-                                    .frame(width: 24)
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .frame(width: 28, alignment: .center)
                                 Text("Type")
+                                    .font(.system(.body, design: .rounded))
+                                    .foregroundColor(Theme.textPrimary)
                                 Spacer()
                                 Picker("Type", selection: $type) {
                                     ForEach(types, id: \.self) { typeName in
@@ -88,31 +94,33 @@ struct EditDeadlineView: View {
                                     }
                                 }
                                 .pickerStyle(.menu)
-                                .accentColor(.primary)
+                                .accentColor(Theme.brandPrimary)
                             }
-                            .padding(.vertical, 4)
-                            .formRow()
+                            .padding(.vertical, 8)
                         }
                         
                         // Card 2: Timeline
                         FormCard(title: "TIMELINE") {
                             if isEvent {
                                 Toggle(isOn: $isAllDay) {
-                                    HStack {
+                                    HStack(spacing: 12) {
                                         Image(systemName: "clock")
                                             .foregroundColor(.purple)
-                                            .frame(width: 24)
+                                            .font(.system(size: 16, weight: .semibold))
+                                            .frame(width: 28, alignment: .center)
                                         Text("All-day")
+                                            .font(.system(.body, design: .rounded))
+                                            .foregroundColor(Theme.textPrimary)
                                     }
                                 }
-                                .padding(.vertical, 4)
-                                .formRow()
+                                .padding(.vertical, 8)
                                 
                                 Divider()
                                 
                                 if isAllDay {
                                     DatePicker("Date", selection: $dueDate, displayedComponents: .date)
-                                        .formRow()
+                                        .font(.system(.body, design: .rounded))
+                                        .padding(.vertical, 8)
                                 } else {
                                     DatePicker("Starts", selection: $dueDate, displayedComponents: [.date, .hourAndMinute])
                                         .onChange(of: dueDate) { _, newDate in
@@ -121,27 +129,33 @@ struct EditDeadlineView: View {
                                                 endDate = newDate.addingTimeInterval(3600)
                                             }
                                         }
-                                        .formRow()
+                                        .font(.system(.body, design: .rounded))
+                                        .padding(.vertical, 8)
                                     
                                     Divider()
                                     
                                     DatePicker("Ends", selection: $endDate, displayedComponents: [.date, .hourAndMinute])
-                                        .formRow()
+                                        .font(.system(.body, design: .rounded))
+                                        .padding(.vertical, 8)
                                 }
                             } else {
                                 DatePicker("Due Date", selection: $dueDate, displayedComponents: [.date, .hourAndMinute])
-                                    .formRow()
+                                    .font(.system(.body, design: .rounded))
+                                    .padding(.vertical, 8)
                             }
                         }
                         
                         // Card 3: Additional Info
                         FormCard(title: "ADDITIONAL INFO") {
                             if !isEvent {
-                                HStack {
+                                HStack(spacing: 12) {
                                     Image(systemName: "book.closed")
                                         .foregroundColor(.gray)
-                                        .frame(width: 24)
+                                        .font(.system(size: 16, weight: .semibold))
+                                        .frame(width: 28, alignment: .center)
                                     Text("Course")
+                                        .font(.system(.body, design: .rounded))
+                                        .foregroundColor(Theme.textPrimary)
                                     Spacer()
                                     Picker("Course", selection: $selectedCourseId) {
                                         Text("None").tag("none")
@@ -150,19 +164,21 @@ struct EditDeadlineView: View {
                                         }
                                     }
                                     .pickerStyle(.menu)
-                                    .accentColor(.primary)
+                                    .accentColor(Theme.brandPrimary)
                                 }
-                                .padding(.vertical, 4)
-                                .formRow()
+                                .padding(.vertical, 8)
                                 
                                 Divider()
                             }
                             
-                            HStack {
+                            HStack(spacing: 12) {
                                 Image(systemName: "flag")
                                     .foregroundColor(.red.opacity(0.7))
-                                    .frame(width: 24)
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .frame(width: 28, alignment: .center)
                                 Text("Priority")
+                                    .font(.system(.body, design: .rounded))
+                                    .foregroundColor(Theme.textPrimary)
                                 Spacer()
                                 Picker("Priority", selection: $priority) {
                                     ForEach(priorities, id: \.self) { level in
@@ -170,20 +186,22 @@ struct EditDeadlineView: View {
                                     }
                                 }
                                 .pickerStyle(.menu)
-                                .accentColor(.primary)
+                                .accentColor(Theme.brandPrimary)
                             }
-                            .padding(.vertical, 4)
-                            .formRow()
+                            .padding(.vertical, 8)
                             
                             Divider()
                             
-                            HStack {
+                            HStack(spacing: 12) {
                                 Image(systemName: "text.alignleft")
                                     .foregroundColor(.gray)
-                                    .frame(width: 24)
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .frame(width: 28, alignment: .center)
                                 TextField("Details (Optional)", text: $details)
+                                    .font(.system(.body, design: .rounded))
+                                    .foregroundColor(Theme.textPrimary)
                             }
-                            .formRow()
+                            .padding(.vertical, 8)
                         }
                         
                         Spacer(minLength: 100) // Space for the floating button
