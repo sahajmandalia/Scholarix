@@ -348,71 +348,159 @@ struct CourseCard: View {
     let onEdit: () -> Void
     let onDelete: () -> Void
     
-    var body: some View {
-        HStack(spacing: 12) {
-            VStack(alignment: .leading, spacing: 8) {
-                Text(course.name)
-                    .font(.system(.body, design: .rounded))
-                    .fontWeight(.bold)
-                    .foregroundColor(Theme.textPrimary)
-                
-                HStack(spacing: 8) {
-                    Text(course.courseLevel)
-                        .font(.system(size: 11, weight: .bold, design: .rounded))
-                        .foregroundColor(Theme.brandPrimary)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 4)
-                        .background(Theme.brandPrimary.opacity(0.12))
-                        .cornerRadius(8)
-                    
-                    Text("Grade \(course.gradeLevel)")
-                        .font(.system(size: 11, weight: .semibold, design: .rounded))
-                        .foregroundColor(Theme.textSecondary)
-                }
-            }
-            
-            Spacer()
-            
-            if let grade = course.gradePercent {
-                VStack(spacing: 2) {
-                    Text("\(grade, specifier: "%.0f")%")
-                        .font(.system(size: 28, weight: .heavy, design: .rounded))
-                        .foregroundColor(Theme.gradeColor(for: grade))
-//                    Text("%")
-//                        .font(.system(size: 12, weight: .bold, design: .rounded))
-//                        .foregroundColor(Theme.gradeColor(for: grade).opacity(0.7))
-                }
-            } else {
-                Text("--")
-                    .font(.system(size: 24, weight: .bold, design: .rounded))
-                    .foregroundColor(Theme.textTertiary)
-            }
-            
-            Menu {
-                Button(action: onEdit) { 
-                    Label("Edit Course", systemImage: "pencil.circle.fill") 
-                }
-                Button(role: .destructive, action: onDelete) { 
-                    Label("Delete Course", systemImage: "trash.fill") 
-                }
-            } label: {
-                Image(systemName: "ellipsis.circle.fill")
-                    .font(.system(size: 24, weight: .semibold))
-                    .foregroundColor(Theme.textSecondary.opacity(0.6))
-                    .frame(width: 32, height: 32)
-            }
+    var levelColor: Color {
+        switch course.courseLevel {
+        case "AP", "IB": return Theme.brandSecondary
+        case "Honors": return Theme.brandPrimary
+        default: return Theme.textSecondary
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 14)
+    }
+    
+    var letterGrade: String {
+        guard let grade = course.gradePercent else { return "--" }
+        switch grade {
+        case 93...110: return "A"
+        case 90..<93: return "A-"
+        case 87..<90: return "B+"
+        case 83..<87: return "B"
+        case 80..<83: return "B-"
+        case 77..<80: return "C+"
+        case 73..<77: return "C"
+        case 70..<73: return "C-"
+        case 67..<70: return "D+"
+        case 63..<67: return "D"
+        case 60..<63: return "D-"
+        default: return "F"
+        }
+    }
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            // Top section with course info
+            HStack(alignment: .top, spacing: 12) {
+                // Left side - Course details
+                VStack(alignment: .leading, spacing: 10) {
+                    Text(course.name)
+                        .font(.system(.title3, design: .rounded))
+                        .fontWeight(.bold)
+                        .foregroundColor(Theme.textPrimary)
+                        .lineLimit(2)
+                    
+                    HStack(spacing: 8) {
+                        // Level badge
+                        HStack(spacing: 4) {
+                            Image(systemName: "chart.bar.fill")
+                                .font(.system(size: 10, weight: .semibold))
+                            Text(course.courseLevel)
+                                .font(.system(size: 12, weight: .bold, design: .rounded))
+                        }
+                        .foregroundColor(levelColor)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(levelColor.opacity(0.15))
+                        .cornerRadius(8)
+                        
+                        // Grade level badge
+                        HStack(spacing: 4) {
+                            Image(systemName: "graduationcap.fill")
+                                .font(.system(size: 10, weight: .semibold))
+                            Text("Grade \(course.gradeLevel)")
+                                .font(.system(size: 12, weight: .semibold, design: .rounded))
+                        }
+                        .foregroundColor(Theme.textSecondary)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(Theme.textSecondary.opacity(0.1))
+                        .cornerRadius(8)
+                        
+                        // Credits badge
+                        HStack(spacing: 4) {
+                            Image(systemName: "star.fill")
+                                .font(.system(size: 10, weight: .semibold))
+                            Text("\(course.credits, specifier: "%.1f") cr")
+                                .font(.system(size: 12, weight: .semibold, design: .rounded))
+                        }
+                        .foregroundColor(Theme.warning)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(Theme.warning.opacity(0.15))
+                        .cornerRadius(8)
+                    }
+                }
+                
+                Spacer()
+                
+                // Right side - Grade display
+                VStack(spacing: 4) {
+                    if let grade = course.gradePercent {
+                        Text("\(grade, specifier: "%.1f")%")
+                            .font(.system(size: 32, weight: .heavy, design: .rounded))
+                            .foregroundColor(Theme.gradeColor(for: grade))
+                        
+                        Text(letterGrade)
+                            .font(.system(size: 14, weight: .bold, design: .rounded))
+                            .foregroundColor(Theme.gradeColor(for: grade))
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 3)
+                            .background(Theme.gradeColor(for: grade).opacity(0.15))
+                            .cornerRadius(6)
+                    } else {
+                        Text("--")
+                            .font(.system(size: 32, weight: .bold, design: .rounded))
+                            .foregroundColor(Theme.textTertiary)
+                        
+                        Text("No Grade")
+                            .font(.system(size: 12, weight: .medium, design: .rounded))
+                            .foregroundColor(Theme.textTertiary)
+                    }
+                }
+            }
+            .padding(16)
+            
+            // Bottom section with actions
+            Divider()
+            
+            HStack(spacing: 16) {
+                Button(action: onEdit) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "pencil.circle.fill")
+                            .font(.system(size: 16, weight: .semibold))
+                        Text("Edit")
+                            .font(.system(size: 14, weight: .semibold, design: .rounded))
+                    }
+                    .foregroundColor(Theme.warning)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
+                    .background(Theme.warning.opacity(0.1))
+                    .cornerRadius(10)
+                }
+                .buttonStyle(PlainButtonStyle())
+                
+                Button(action: onDelete) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "trash.circle.fill")
+                            .font(.system(size: 16, weight: .semibold))
+                        Text("Delete")
+                            .font(.system(size: 14, weight: .semibold, design: .rounded))
+                    }
+                    .foregroundColor(Theme.danger)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
+                    .background(Theme.danger.opacity(0.1))
+                    .cornerRadius(10)
+                }
+                .buttonStyle(PlainButtonStyle())
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+        }
         .background(Theme.cardBackground)
         .cornerRadius(16)
-        .shadow(color: Theme.shadowLight, radius: 6, x: 0, y: 2)
+        .shadow(color: Theme.shadowMedium, radius: 8, x: 0, y: 3)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
                 .stroke(Theme.borderSubtle, lineWidth: 0.5)
         )
-        .contentShape(Rectangle())
-        .onTapGesture { onEdit() }
     }
 }
 
