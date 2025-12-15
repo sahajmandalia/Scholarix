@@ -35,49 +35,48 @@ struct EditCourseView: View {
     var body: some View {
         NavigationView {
             ZStack(alignment: .bottom) {
-                // --- PREMIUM BACKGROUND ---
-                LinearGradient(
-                    colors: [Color.orange.opacity(0.05), Color.red.opacity(0.05)],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-                .ignoresSafeArea()
+                // Background
+                Theme.backgroundGrouped.ignoresSafeArea()
                 
                 ScrollView {
                     VStack(spacing: 20) {
-                        header(title: "Edit Course", subtitle: "Update course details", icon: "pencil.circle.fill", color: .orange)
+                        header(title: "Edit Course", subtitle: "Update course details", icon: "pencil.circle.fill", color: Theme.warning)
                         
                         FormCard(title: "COURSE DETAILS") {
                             HStack {
                                 Image(systemName: "pencil")
-                                    .foregroundColor(.orange)
+                                    .foregroundColor(Theme.warning)
                                     .frame(width: 24)
-                                TextField("Course Name", text: $courseName).autocapitalization(.words)
+                                TextField("Course Name", text: $courseName)
+                                    .autocapitalization(.words)
+                                    .foregroundColor(Theme.textPrimary)
                             }
                             .formRow()
                             Divider()
                             HStack {
                                 Image(systemName: "graduationcap")
-                                    .foregroundColor(.gray)
+                                    .foregroundColor(Theme.brandSecondary)
                                     .frame(width: 24)
                                 Text("Grade Taken")
+                                    .foregroundColor(Theme.textPrimary)
                                 Spacer()
                                 Picker("Grade Taken", selection: $gradeLevel) {
                                     ForEach(gradeLevels, id: \.self) { level in Text("\(level)th").tag(level) }
-                                }.pickerStyle(.menu).accentColor(.primary)
+                                }.pickerStyle(.menu).accentColor(Theme.brandPrimary)
                             }
                             .padding(.vertical, 4)
                             .formRow()
                             Divider()
                             HStack {
                                 Image(systemName: "chart.bar")
-                                    .foregroundColor(.gray)
+                                    .foregroundColor(Theme.warning)
                                     .frame(width: 24)
                                 Text("Level")
+                                    .foregroundColor(Theme.textPrimary)
                                 Spacer()
                                 Picker("Level", selection: $courseLevel) {
                                     ForEach(courseLevels, id: \.self) { level in Text(level).tag(level) }
-                                }.pickerStyle(.menu).accentColor(.primary)
+                                }.pickerStyle(.menu).accentColor(Theme.brandPrimary)
                             }
                             .padding(.vertical, 4)
                             .formRow()
@@ -87,34 +86,46 @@ struct EditCourseView: View {
                             VStack(alignment: .leading, spacing: 0) {
                                 HStack {
                                     Image(systemName: "percent")
-                                        .foregroundColor(.gray)
+                                        .foregroundColor(Theme.success)
                                         .frame(width: 24)
                                     Text("Current Grade")
+                                        .foregroundColor(Theme.textPrimary)
                                     Spacer()
                                     TextField("95.0", text: $gradeString)
                                         .keyboardType(.decimalPad)
                                         .multilineTextAlignment(.trailing)
+                                        .foregroundColor(Theme.textPrimary)
                                         .frame(width: 90)
                                         .padding(8)
-                                        .background(Color(.systemGray6))
+                                        .background(Theme.inputBackground)
                                         .cornerRadius(8)
                                         .onChange(of: gradeString) { _, newValue in validateGrade(newValue) }
                                 }
                                 .formRow()
                                 if let error = gradeError {
-                                    Text(error).font(.caption).foregroundColor(.red).padding(.top, 4)
+                                    Text(error)
+                                        .font(.caption)
+                                        .fontWeight(.semibold)
+                                        .foregroundColor(Theme.danger)
+                                        .padding(.top, 4)
                                 }
                             }
                             Divider()
                             HStack {
                                 Image(systemName: "star.circle")
-                                    .foregroundColor(.gray)
+                                    .foregroundColor(Theme.warning)
                                     .frame(width: 24)
                                 Text("Credits")
+                                    .foregroundColor(Theme.textPrimary)
                                 Spacer()
                                 Stepper(value: $credits, in: 0.0...5.0, step: 0.5) {
-                                    Text(String(format: "%.1f", credits)).frame(width: 40).multilineTextAlignment(.center)
-                                }.labelsHidden()
+                                    Text(String(format: "%.1f", credits))
+                                        .fontWeight(.semibold)
+                                        .foregroundColor(Theme.textPrimary)
+                                        .frame(width: 40)
+                                        .multilineTextAlignment(.center)
+                                }
+                                .labelsHidden()
                             }
                             .formRow()
                         }
