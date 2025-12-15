@@ -35,72 +35,105 @@ struct AddActivityView: View {
                         header(title: "New Activity", subtitle: "Build your experience profile", icon: "plus.circle.fill", color: .green)
                         
                         FormCard(title: "BASIC INFO") {
-                            HStack {
+                            HStack(spacing: 12) {
                                 Image(systemName: "star")
                                     .foregroundColor(.green)
-                                    .frame(width: 24)
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .frame(width: 28, alignment: .center)
                                 TextField("Activity Name (e.g. Debate Club)", text: $title)
+                                    .font(.system(.body, design: .rounded))
+                                    .foregroundColor(Theme.textPrimary)
                             }
-                            .formRow()
+                            .padding(.vertical, 8)
+                            
                             Divider()
-                            HStack {
+                            
+                            HStack(spacing: 12) {
                                 Image(systemName: "person.text.rectangle")
                                     .foregroundColor(.blue)
-                                    .frame(width: 24)
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .frame(width: 28, alignment: .center)
                                 TextField("Role / Position (e.g. Member)", text: $position)
+                                    .font(.system(.body, design: .rounded))
+                                    .foregroundColor(Theme.textPrimary)
                             }
-                            .formRow()
+                            .padding(.vertical, 8)
+                            
                             Divider()
-                            HStack {
+                            
+                            HStack(spacing: 12) {
                                 Image(systemName: "tag")
                                     .foregroundColor(.orange)
-                                    .frame(width: 24)
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .frame(width: 28, alignment: .center)
                                 Text("Type")
+                                    .font(.system(.body, design: .rounded))
+                                    .foregroundColor(Theme.textPrimary)
                                 Spacer()
                                 Picker("Type", selection: $type) {
                                     ForEach(types, id: \.self) { Text($0) }
-                                }.pickerStyle(.menu).accentColor(.primary)
+                                }
+                                .pickerStyle(.menu)
+                                .accentColor(Theme.brandPrimary)
                             }
-                            .padding(.vertical, 4)
-                            .formRow()
+                            .padding(.vertical, 8)
                         }
                         
                         FormCard(title: "TIMELINE") {
                             DatePicker("Start Date", selection: $startDate, displayedComponents: .date)
-                                .formRow()
+                                .font(.system(.body, design: .rounded))
+                                .padding(.vertical, 8)
+                            
                             Divider()
+                            
                             Toggle("Currently Ongoing", isOn: $isOngoing)
-                                .padding(.vertical, 4)
-                                .formRow()
+                                .font(.system(.body, design: .rounded))
+                                .padding(.vertical, 8)
+                            
                             if !isOngoing {
                                 Divider()
                                 DatePicker("End Date", selection: $endDate, displayedComponents: .date)
-                                    .formRow()
+                                    .font(.system(.body, design: .rounded))
+                                    .padding(.vertical, 8)
                             }
                         }
                         
                         FormCard(title: "IMPACT") {
-                            HStack {
+                            HStack(spacing: 12) {
                                 Image(systemName: "clock")
                                     .foregroundColor(.gray)
-                                    .frame(width: 24)
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .frame(width: 28, alignment: .center)
                                 TextField("Total Hours (Optional)", text: $hoursString)
                                     .keyboardType(.decimalPad)
+                                    .font(.system(.body, design: .rounded))
+                                    .foregroundColor(Theme.textPrimary)
                             }
-                            .formRow()
+                            .padding(.vertical, 8)
+                            
                             Divider()
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text("Description / Achievements")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                                    .padding(.top, 4)
+                            
+                            VStack(alignment: .leading, spacing: 10) {
+                                HStack(spacing: 12) {
+                                    Image(systemName: "text.alignleft")
+                                        .foregroundColor(.gray)
+                                        .font(.system(size: 16, weight: .semibold))
+                                        .frame(width: 28, alignment: .center)
+                                    Text("Description / Achievements")
+                                        .font(.system(.caption, design: .rounded))
+                                        .fontWeight(.semibold)
+                                        .foregroundColor(Theme.textSecondary)
+                                }
+                                .padding(.top, 4)
+                                
                                 TextEditor(text: $description)
                                     .frame(height: 100)
-                                    .padding(4)
-                                    .background(Color(.systemGray6))
-                                    .cornerRadius(8)
+                                    .padding(8)
+                                    .background(Theme.inputBackground)
+                                    .cornerRadius(10)
+                                    .font(.system(.body, design: .rounded))
                             }
-                            .padding(.bottom, 8)
+                            .padding(.bottom, 4)
                         }
                         
                         Spacer(minLength: 100)

@@ -43,89 +43,122 @@ struct EditCourseView: View {
                         header(title: "Edit Course", subtitle: "Update course details", icon: "pencil.circle.fill", color: Theme.warning)
                         
                         FormCard(title: "COURSE DETAILS") {
-                            HStack {
+                            HStack(spacing: 12) {
                                 Image(systemName: "pencil")
                                     .foregroundColor(Theme.warning)
-                                    .frame(width: 24)
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .frame(width: 28, alignment: .center)
                                 TextField("Course Name", text: $courseName)
                                     .autocapitalization(.words)
                                     .foregroundColor(Theme.textPrimary)
+                                    .font(.system(.body, design: .rounded))
                             }
-                            .formRow()
+                            .padding(.vertical, 8)
+                            
                             Divider()
-                            HStack {
+                            
+                            HStack(spacing: 12) {
                                 Image(systemName: "graduationcap")
                                     .foregroundColor(Theme.brandSecondary)
-                                    .frame(width: 24)
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .frame(width: 28, alignment: .center)
                                 Text("Grade Taken")
                                     .foregroundColor(Theme.textPrimary)
+                                    .font(.system(.body, design: .rounded))
                                 Spacer()
                                 Picker("Grade Taken", selection: $gradeLevel) {
-                                    ForEach(gradeLevels, id: \.self) { level in Text("\(level)th").tag(level) }
-                                }.pickerStyle(.menu).accentColor(Theme.brandPrimary)
+                                    ForEach(gradeLevels, id: \.self) { level in 
+                                        Text("\(level)th").tag(level) 
+                                    }
+                                }
+                                .pickerStyle(.menu)
+                                .accentColor(Theme.brandPrimary)
                             }
-                            .padding(.vertical, 4)
-                            .formRow()
+                            .padding(.vertical, 8)
+                            
                             Divider()
-                            HStack {
+                            
+                            HStack(spacing: 12) {
                                 Image(systemName: "chart.bar")
                                     .foregroundColor(Theme.warning)
-                                    .frame(width: 24)
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .frame(width: 28, alignment: .center)
                                 Text("Level")
                                     .foregroundColor(Theme.textPrimary)
+                                    .font(.system(.body, design: .rounded))
                                 Spacer()
                                 Picker("Level", selection: $courseLevel) {
-                                    ForEach(courseLevels, id: \.self) { level in Text(level).tag(level) }
-                                }.pickerStyle(.menu).accentColor(Theme.brandPrimary)
+                                    ForEach(courseLevels, id: \.self) { level in 
+                                        Text(level).tag(level) 
+                                    }
+                                }
+                                .pickerStyle(.menu)
+                                .accentColor(Theme.brandPrimary)
                             }
-                            .padding(.vertical, 4)
-                            .formRow()
+                            .padding(.vertical, 8)
                         }
                         
                         FormCard(title: "PERFORMANCE") {
                             VStack(alignment: .leading, spacing: 0) {
-                                HStack {
+                                HStack(spacing: 12) {
                                     Image(systemName: "percent")
                                         .foregroundColor(Theme.success)
-                                        .frame(width: 24)
+                                        .font(.system(size: 16, weight: .semibold))
+                                        .frame(width: 28, alignment: .center)
                                     Text("Current Grade")
                                         .foregroundColor(Theme.textPrimary)
+                                        .font(.system(.body, design: .rounded))
                                     Spacer()
                                     TextField("95.0", text: $gradeString)
                                         .keyboardType(.decimalPad)
                                         .multilineTextAlignment(.trailing)
                                         .foregroundColor(Theme.textPrimary)
-                                        .frame(width: 90)
-                                        .padding(8)
+                                        .font(.system(.body, design: .rounded))
+                                        .fontWeight(.medium)
+                                        .frame(width: 80)
+                                        .padding(.horizontal, 12)
+                                        .padding(.vertical, 10)
                                         .background(Theme.inputBackground)
-                                        .cornerRadius(8)
+                                        .cornerRadius(10)
                                         .onChange(of: gradeString) { _, newValue in validateGrade(newValue) }
                                 }
-                                .formRow()
+                                .padding(.vertical, 8)
+                                
                                 if let error = gradeError {
                                     Text(error)
-                                        .font(.caption)
+                                        .font(.system(.caption, design: .rounded))
                                         .fontWeight(.semibold)
                                         .foregroundColor(Theme.danger)
                                         .padding(.top, 4)
+                                        .padding(.leading, 40)
                                 }
                             }
+                            
                             Divider()
-                            HStack {
+                            
+                            HStack(spacing: 12) {
                                 Image(systemName: "star.circle")
                                     .foregroundColor(Theme.warning)
-                                    .frame(width: 24)
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .frame(width: 28, alignment: .center)
                                 Text("Credits")
                                     .foregroundColor(Theme.textPrimary)
+                                    .font(.system(.body, design: .rounded))
                                 Spacer()
                                 Stepper(value: $credits, in: 0.0...5.0, step: 0.5) {
                                     Text(String(format: "%.1f", credits))
-                                        .fontWeight(.semibold)
+                                        .fontWeight(.bold)
                                         .foregroundColor(Theme.textPrimary)
-                                        .frame(width: 40)
+                                        .font(.system(.body, design: .rounded))
+                                        .frame(width: 50)
                                         .multilineTextAlignment(.center)
+                                        .padding(.horizontal, 10)
+                                        .padding(.vertical, 8)
+                                        .background(Theme.inputBackground)
+                                        .cornerRadius(10)
                                 }
                             }
+                            .padding(.vertical, 8)
                         }
                         Spacer(minLength: 100)
                     }
