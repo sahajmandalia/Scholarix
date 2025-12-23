@@ -156,6 +156,7 @@ struct ExtracurricularsView: View {
                             .stroke(Theme.brandPrimary.opacity(0.3), lineWidth: 1.5)
                     )
                     .padding(.horizontal, 16)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
                 } else {
                     HStack(spacing: 12) {
                         Spacer()
@@ -173,8 +174,13 @@ struct ExtracurricularsView: View {
                                 .clipShape(Circle())
                                 .shadow(color: Theme.shadowLight, radius: 6, x: 0, y: 3)
                         }
+                        .transition(.scale.combined(with: .opacity))
                         
-                        Button(action: { showingAddSheet = true }) {
+                        Button(action: { 
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                showingAddSheet = true 
+                            }
+                        }) {
                             HStack(spacing: 10) {
                                 Image(systemName: "plus.circle.fill")
                                     .font(.system(size: 20, weight: .semibold))
@@ -191,10 +197,12 @@ struct ExtracurricularsView: View {
                             .clipShape(Capsule())
                             .shadow(color: Theme.warning.opacity(0.4), radius: 10, x: 0, y: 5)
                         }
+                        .transition(.move(edge: .trailing).combined(with: .opacity))
                     }
                     .padding(.horizontal, 16)
                 }
             }
+            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isSearching)
             .padding(.bottom, 16)
             .background(Theme.backgroundGrouped)
         }
@@ -206,6 +214,8 @@ struct ExtracurricularsView: View {
 struct ImpactCard: View {
     let hours: Double
     let active: Int
+    
+    @State private var animateNumbers = false
     
     var body: some View {
         HStack(spacing: 0) {
@@ -226,6 +236,13 @@ struct ImpactCard: View {
             RoundedRectangle(cornerRadius: 20)
                 .stroke(Color.white.opacity(0.2), lineWidth: 1)
         )
+        .scaleEffect(animateNumbers ? 1.0 : 0.95)
+        .opacity(animateNumbers ? 1.0 : 0.0)
+        .onAppear {
+            withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
+                animateNumbers = true
+            }
+        }
     }
     
     func statView(title: String, value: String, icon: String) -> some View {
@@ -247,13 +264,14 @@ struct ImpactCard: View {
     }
 }
 
-// --- MINIMALIST ACTIVITY CARD with improved, student-friendly UI ---
+// --- ACTIVITY CARD - Redesigned to match CourseCard format ---
 struct ActivityCard: View {
     let activity: Activity
     let onEdit: () -> Void
     let onDelete: () -> Void
     
     @State private var showingDescription = false
+    @State private var isPressed = false
     
     var themeColor: Color {
         switch activity.type {
@@ -264,15 +282,6 @@ struct ActivityCard: View {
         case "Work": return Theme.info
         default: return Theme.brandSecondary
         }
-    }
-    
-    // Determines badge text color (white or black) based on brightness for contrast
-    var badgeTextColor: Color {
-        // Simple luminance check to decide text color
-        let uiColor = UIColor(themeColor)
-        var white: CGFloat = 0
-        uiColor.getWhite(&white, alpha: nil)
-        return white < 0.7 ? Color.white : Color.black
     }
     
     var badgeText: String {
@@ -294,97 +303,104 @@ struct ActivityCard: View {
     }
     
     var body: some View {
-        Button(action: onEdit) {
-            HStack(spacing: 0) {
-                // 1. Left vertical capsule color strip
-                Capsule()
-                    .fill(themeColor)
-                    .frame(width: 5)
-                    .edgesIgnoringSafeArea(.horizontal)
-                
-                // 2. Main content VStack
-                VStack(alignment: .leading, spacing: 6) {
-                    HStack(alignment: .center, spacing: 6) {
-                        Text(activity.title)
-                            .font(.system(.body, design: .rounded))
-                            .fontWeight(.bold)
-                            .foregroundColor(Theme.textPrimary)
-                            .lineLimit(1)
-                        
-                        if let description = activity.description, !description.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                            Button {
+        HStack(spacing: 16) {
+            // Vertical Capsule indicator (matching CourseCard)
+            Capsule()
+                .fill(themeColor)
+                .frame(width: 6)
+                .padding(.vertical, 16)
+            
+            VStack(alignment: .leading, spacing: 6) {
+                // Activity title with info button
+                HStack(alignment: .center, spacing: 6) {
+                    Text(activity.title)
+                        .font(.system(.body, design: .rounded))
+                        .fontWeight(.bold)
+                        .foregroundColor(Theme.textPrimary)
+                        .lineLimit(1)
+                    
+                    if let description = activity.description, !description.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                        Button {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                                 showingDescription = true
-                            } label: {
-                                Image(systemName: "info.circle.fill")
-                                    .foregroundColor(themeColor)
-                                    .font(.system(size: 14, weight: .semibold))
                             }
-                            .buttonStyle(PlainButtonStyle())
-                            .accessibilityLabel("Info about \(activity.title)")
-                            .alert(isPresented: $showingDescription) {
-                                Alert(
-                                    title: Text(activity.title),
-                                    message: Text(description),
-                                    dismissButton: .default(Text("Got it!"))
-                                )
-                            }
+                        } label: {
+                            Image(systemName: "info.circle.fill")
+                                .foregroundColor(themeColor)
+                                .font(.system(size: 14, weight: .semibold))
                         }
+                        .buttonStyle(PlainButtonStyle())
+                        .accessibilityLabel("Info about \(activity.title)")
+                        .alert(isPresented: $showingDescription) {
+                            Alert(
+                                title: Text(activity.title),
+                                message: Text(description),
+                                dismissButton: .default(Text("Got it!"))
+                            )
+                        }
+                    }
+                }
+                
+                HStack(spacing: 8) {
+                    // Type badge (matching CourseCard style)
+                    if !activity.type.isEmpty {
+                        Text(activity.type)
+                            .font(.caption)
+                            .fontWeight(.semibold)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(themeColor.opacity(0.2))
+                            .foregroundColor(themeColor)
+                            .clipShape(Capsule())
                     }
                     
-                    HStack(spacing: 6) {
-                        if !activity.position.isEmpty {
-                            Text(activity.position)
-                        }
-                        if !activity.position.isEmpty && !activity.type.isEmpty {
-                            Text("•")
-                        }
-                        if !activity.type.isEmpty {
-                            Text(activity.type)
-                        }
+                    // Position text
+                    if !activity.position.isEmpty {
+                        Text(activity.position)
+                            .font(.caption)
+                            .foregroundColor(Theme.textSecondary)
                     }
-                    .font(.caption)
-                    .foregroundColor(Theme.textSecondary)
-                    .lineLimit(1)
-                }
-                
-                Spacer(minLength: 12)
-                
-                // 3. Badge on right side
-                if !badgeText.isEmpty {
-                    Text(badgeText)
-                        .font(.system(size: 16, weight: .semibold, design: .rounded))
-                        .foregroundColor(badgeTextColor)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 6)
-                        .background(themeColor.opacity(0.25))
-                        .clipShape(Capsule())
-                        .accessibilityLabel(badgeAccessibilityLabel)
-                        .minimumScaleFactor(0.7)
-                        .lineLimit(1)
                 }
             }
-            .padding(.vertical, 16)
-            .padding(.horizontal, 20)
-            .background(Theme.cardBackground)
-            .cornerRadius(18)
-            .shadow(color: Theme.shadowLight, radius: 6, x: 0, y: 3)
+            
+            Spacer()
+            
+            // Hours/Active Badge (matching CourseCard grade badge)
+            if !badgeText.isEmpty {
+                Text(badgeText)
+                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                    .foregroundColor(.white)
+                    .padding(.vertical, 8)
+                    .padding(.horizontal, 14)
+                    .background(themeColor)
+                    .clipShape(Capsule())
+                    .accessibilityLabel(badgeAccessibilityLabel)
+            }
         }
-        .buttonStyle(PlainButtonStyle())
-        // Swipe Actions only inside ActivityCard
-        .swipeActions(edge: .leading) {
-            Button {
-                onEdit()
-            } label: {
-                Label("Edit", systemImage: "pencil")
+        .padding(.vertical, 18)
+        .padding(.horizontal, 20)
+        .background(Theme.cardBackground)
+        .cornerRadius(18)
+        .shadow(color: Color.black.opacity(0.12), radius: 6, x: 0, y: 4)
+        .scaleEffect(isPressed ? 0.97 : 1.0)
+        .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isPressed)
+        .contentShape(Rectangle())
+        .onTapGesture {
+            withAnimation(.spring(response: 0.2, dampingFraction: 0.7)) {
+                isPressed = true
             }
-            .tint(.orange)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                withAnimation(.spring(response: 0.2, dampingFraction: 0.7)) {
+                    isPressed = false
+                }
+                onEdit()
+            }
+        }
+        .swipeActions(edge: .leading) {
+            Button { onEdit() } label: { Label("Edit", systemImage: "pencil") }.tint(.orange)
         }
         .swipeActions(edge: .trailing) {
-            Button(role: .destructive) {
-                onDelete()
-            } label: {
-                Label("Delete", systemImage: "trash")
-            }
+            Button(role: .destructive) { onDelete() } label: { Label("Delete", systemImage: "trash") }
         }
     }
 }
