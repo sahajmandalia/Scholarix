@@ -77,10 +77,15 @@ struct AcademicView: View {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     HStack(spacing: 16) {
                         if selectedTab == 1 {
-                            Button(action: { withAnimation { isListMode.toggle() } }) {
+                            Button(action: { 
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) { 
+                                    isListMode.toggle() 
+                                } 
+                            }) {
                                 Image(systemName: isListMode ? "calendar" : "list.bullet")
                                     .font(.system(size: 18, weight: .semibold))
                                     .foregroundColor(.primary)
+                                    .contentTransition(.symbolEffect(.replace))
                             }
                         }
                         NavigationLink(destination: SettingsView()) {
@@ -210,7 +215,12 @@ struct AcademicView: View {
                     HStack {
                         Image(systemName: "magnifyingglass").foregroundColor(.gray)
                         TextField("Search...", text: $viewModel.searchText).submitLabel(.done)
-                        Button(action: { withAnimation { isSearching = false; viewModel.searchText = "" } }) {
+                        Button(action: { 
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) { 
+                                isSearching = false
+                                viewModel.searchText = "" 
+                            } 
+                        }) {
                             Image(systemName: "xmark.circle.fill").foregroundColor(.secondary)
                         }
                     }
@@ -219,10 +229,15 @@ struct AcademicView: View {
                     .cornerRadius(20)
                     .shadow(radius: 10)
                     .padding()
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
                 } else {
                     HStack {
                         Spacer()
-                        Button(action: { withAnimation { isSearching = true } }) {
+                        Button(action: { 
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) { 
+                                isSearching = true 
+                            } 
+                        }) {
                             Image(systemName: "magnifyingglass")
                                 .font(.title3)
                                 .foregroundColor(.primary)
@@ -231,8 +246,13 @@ struct AcademicView: View {
                                 .clipShape(Circle())
                                 .shadow(radius: 5)
                         }
+                        .transition(.scale.combined(with: .opacity))
                         
-                        Button(action: { showingAddSheet = true }) {
+                        Button(action: { 
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                showingAddSheet = true 
+                            }
+                        }) {
                             HStack(spacing: 8) {
                                 Image(systemName: "plus")
                                 Text(selectedTab == 0 ? "Course" : "Task")
@@ -247,10 +267,12 @@ struct AcademicView: View {
                             .clipShape(Capsule())
                             .shadow(color: .blue.opacity(0.4), radius: 8, x: 0, y: 4)
                         }
+                        .transition(.move(edge: .trailing).combined(with: .opacity))
                     }
                     .padding()
                 }
             }
+            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isSearching)
         }
     }
 }
@@ -260,6 +282,8 @@ struct AcademicView: View {
 struct GPACard: View {
     let weighted: String
     let unweighted: String
+    
+    @State private var animateNumbers = false
     
     var body: some View {
         HStack(spacing: 0) {
@@ -275,6 +299,13 @@ struct GPACard: View {
         )
         .cornerRadius(24)
         .shadow(color: .blue.opacity(0.3), radius: 15, x: 0, y: 8)
+        .scaleEffect(animateNumbers ? 1.0 : 0.95)
+        .opacity(animateNumbers ? 1.0 : 0.0)
+        .onAppear {
+            withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
+                animateNumbers = true
+            }
+        }
     }
     
     func statView(title: String, value: String) -> some View {
@@ -296,6 +327,8 @@ struct CourseCard: View {
     let course: Course
     let onEdit: () -> Void
     let onDelete: () -> Void
+    
+    @State private var isPressed = false
     
     var levelColor: Color {
         switch course.courseLevel {
@@ -379,8 +412,20 @@ struct CourseCard: View {
         .background(Theme.cardBackground)
         .cornerRadius(18)
         .shadow(color: Color.black.opacity(0.12), radius: 6, x: 0, y: 4)
+        .scaleEffect(isPressed ? 0.97 : 1.0)
+        .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isPressed)
         .contentShape(Rectangle())
-        .onTapGesture { onEdit() }
+        .onTapGesture { 
+            withAnimation(.spring(response: 0.2, dampingFraction: 0.7)) {
+                isPressed = true
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                withAnimation(.spring(response: 0.2, dampingFraction: 0.7)) {
+                    isPressed = false
+                }
+                onEdit()
+            }
+        }
         .swipeActions(edge: .leading) {
             Button { onEdit() } label: { Label("Edit", systemImage: "pencil") }.tint(.orange)
         }
@@ -396,35 +441,68 @@ struct TaskRowCard: View {
     let onEdit: () -> Void
     var onDelete: (() -> Void)? = nil
     
+    @State private var isPressed = false
+    
+    var typeColor: Color {
+        switch deadline.type {
+        case "Test": return Theme.activityTest
+        case "Project": return Theme.activityProject
+        case "Essay": return Theme.activityEssay
+        case "Application": return Theme.activityApplication
+        case "Event": return Theme.activityEvent
+        default: return Theme.brandPrimary
+        }
+    }
+    
     var body: some View {
-        HStack {
-            Button(action: { withAnimation { viewModel.toggleCompletion(deadline: deadline) } }) {
+        HStack(spacing: 16) {
+            // Vertical Capsule indicator (matching CourseCard and ActivityCard)
+            Capsule()
+                .fill(deadline.isCompleted ? Color.gray.opacity(0.3) : typeColor)
+                .frame(width: 6)
+                .padding(.vertical, 16)
+            
+            // Checkmark Button
+            Button(action: { 
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) { 
+                    viewModel.toggleCompletion(deadline: deadline) 
+                } 
+            }) {
                 Image(systemName: deadline.isCompleted ? "checkmark.circle.fill" : "circle")
-                    .font(.title2)
+                    .font(.system(size: 24, weight: .semibold))
                     .foregroundColor(deadline.isCompleted ? .green : .secondary.opacity(0.5))
             }
-            .padding(.trailing, 8)
             .buttonStyle(PlainButtonStyle())
             
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 6) {
                 Text(deadline.title)
                     .font(.system(.body, design: .rounded))
-                    .fontWeight(.medium)
+                    .fontWeight(.bold)
                     .strikethrough(deadline.isCompleted)
-                    .foregroundColor(deadline.isCompleted ? .secondary : .primary)
+                    .foregroundColor(deadline.isCompleted ? Theme.textSecondary : Theme.textPrimary)
+                    .lineLimit(1)
                 
-                HStack(spacing: 6) {
-                    Text(deadline.type.uppercased())
-                        .font(.system(size: 9, weight: .bold))
-                        .foregroundColor(.secondary)
+                HStack(spacing: 8) {
+                    // Type badge (matching CourseCard and ActivityCard style)
+                    if !deadline.isCompleted {
+                        Text(deadline.type.uppercased())
+                            .font(.caption)
+                            .fontWeight(.semibold)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(typeColor.opacity(0.2))
+                            .foregroundColor(typeColor)
+                            .clipShape(Capsule())
+                    }
                     
-                    Text("•")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                    
-                    Text(deadline.dueDate, style: .date)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                    // Date
+                    HStack(spacing: 4) {
+                        Image(systemName: "calendar")
+                            .font(.system(size: 10, weight: .semibold))
+                        Text(deadline.dueDate, style: .date)
+                    }
+                    .font(.caption)
+                    .foregroundColor(Theme.textSecondary)
                 }
             }
             
@@ -439,16 +517,29 @@ struct TaskRowCard: View {
             } label: {
                 Image(systemName: "ellipsis")
                     .font(.system(size: 20, weight: .bold))
-                    .foregroundColor(.secondary.opacity(0.6))
+                    .foregroundColor(Theme.textSecondary.opacity(0.6))
                     .frame(width: 30, height: 30)
                     .padding(.leading, 8)
             }
         }
-        .padding(16)
-        .background(Color(.secondarySystemGroupedBackground))
-        .cornerRadius(16)
-        .shadow(color: .black.opacity(0.03), radius: 5, x: 0, y: 2)
+        .padding(.vertical, 18)
+        .padding(.horizontal, 20)
+        .background(Theme.cardBackground)
+        .cornerRadius(18)
+        .shadow(color: Color.black.opacity(0.12), radius: 6, x: 0, y: 4)
+        .scaleEffect(isPressed ? 0.97 : 1.0)
+        .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isPressed)
         .contentShape(Rectangle())
-        .onTapGesture { onEdit() }
+        .onTapGesture {
+            withAnimation(.spring(response: 0.2, dampingFraction: 0.7)) {
+                isPressed = true
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                withAnimation(.spring(response: 0.2, dampingFraction: 0.7)) {
+                    isPressed = false
+                }
+                onEdit()
+            }
+        }
     }
 }
