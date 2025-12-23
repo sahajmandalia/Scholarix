@@ -85,7 +85,6 @@ struct AcademicView: View {
                                 Image(systemName: isListMode ? "calendar" : "list.bullet")
                                     .font(.system(size: 18, weight: .semibold))
                                     .foregroundColor(.primary)
-                                    .contentTransition(.symbolEffect(.replace))
                             }
                         }
                         NavigationLink(destination: SettingsView()) {
