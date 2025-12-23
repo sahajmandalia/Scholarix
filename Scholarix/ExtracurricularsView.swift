@@ -2,101 +2,94 @@ import SwiftUI
 
 struct ExtracurricularsView: View {
     @StateObject private var viewModel = ExtracurricularsViewModel()
-    @EnvironmentObject var menuManager: MenuManager // For the hamburger menu
+    @EnvironmentObject var menuManager: MenuManager
     
     @State private var showingAddSheet = false
     @State private var selectedActivity: Activity?
     @State private var isSearching = false
     
     var body: some View {
-            NavigationStack {
-                ZStack(alignment: .bottom) {
-                    Theme.backgroundGrouped.ignoresSafeArea()
-                    
-                    // Content
-                    List {
-                        // --- NEW TITLE HEADER ---
-                        Section {
-                            header(title: "Extracurriculars", subtitle: "Clubs, Sports & Awards", icon: "trophy.fill", color: .orange)
-                                .listRowInsets(EdgeInsets())
-                                .listRowBackground(Color.clear)
-                                .padding(.top, 10)
-                        }
+        NavigationStack {
+            ZStack(alignment: .bottom) {
+                Theme.backgroundGrouped.ignoresSafeArea()
+                
+                // Content
+                List {
+                    // --- TITLE HEADER ---
+                    Section {
+                        header(title: "Extracurriculars", subtitle: "Clubs, Sports & Awards", icon: "trophy.fill", color: .orange)
+                            .listRowInsets(EdgeInsets())
+                            .listRowBackground(Color.clear)
+                            .padding(.top, 10)
+                    }
 
-                        // 1. Impact Summary Card
+                    // 1. Impact Summary Card
+                    Section {
+                        ImpactCard(hours: viewModel.totalHours, active: viewModel.activeCount)
+                            .listRowInsets(EdgeInsets())
+                            .listRowBackground(Color.clear)
+                            .padding(.horizontal, 16)
+                            .padding(.bottom, 10)
+                    }
+                    
+                    // 2. Activities List
+                    if viewModel.filteredActivities.isEmpty {
                         Section {
-                            ImpactCard(hours: viewModel.totalHours, active: viewModel.activeCount)
-                                .listRowInsets(EdgeInsets())
+                            emptyStateView
                                 .listRowBackground(Color.clear)
-                                .padding(.horizontal, 16)
-                                .padding(.bottom, 10)
                         }
-                        
-                        // 2. Activities List
-                        if viewModel.filteredActivities.isEmpty {
-                            Section {
-                                emptyStateView
-                                    .listRowBackground(Color.clear)
-                            }
-                        } else {
-                            Section(header: Text("Activities").font(.headline).foregroundColor(.primary)) {
-                                ForEach(viewModel.filteredActivities) { activity in
-                                    ActivityCard(
-                                        activity: activity,
-                                        onEdit: { selectedActivity = activity },
-                                        onDelete: { viewModel.deleteActivity(activity) }
-                                    )
-                                    .swipeActions(edge: .leading) {
-                                        Button { selectedActivity = activity } label: { Label("Edit", systemImage: "pencil") }
-                                            .tint(.orange)
-                                    }
-                                    .swipeActions(edge: .trailing) {
-                                        Button(role: .destructive) { viewModel.deleteActivity(activity) } label: { Label("Delete", systemImage: "trash") }
-                                    }
-                                    .listRowSeparator(.hidden)
-                                    .listRowBackground(Color.clear)
-                                    .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
-                                }
+                    } else {
+                        Section(header: Text("Activities").font(.headline).foregroundColor(.primary)) {
+                            ForEach(viewModel.filteredActivities) { activity in
+                                ActivityCard(
+                                    activity: activity,
+                                    onEdit: { selectedActivity = activity },
+                                    onDelete: { viewModel.deleteActivity(activity) }
+                                )
+                                .listRowSeparator(.hidden)
+                                .listRowBackground(Color.clear)
+                                .listRowInsets(EdgeInsets(top: 10, leading: 16, bottom: 10, trailing: 16))
                             }
                         }
                     }
-                    .listStyle(.plain)
-                    .scrollContentBackground(.hidden)
-                    .padding(.bottom, 80) // Space for bottom bar
-                    
-                    // Bottom Action Bar
-                    bottomActionBar
                 }
-                .navigationTitle("Extracurricular Hub") // <--- UPDATED TITLE
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .navigationBarLeading) {
-                        Button(action: { menuManager.open() }) {
-                            Image(systemName: "line.3.horizontal")
-                                .font(.system(size: 20, weight: .semibold))
-                                .foregroundColor(Theme.textPrimary)
-                        }
-                    }
-                    
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        NavigationLink(destination: SettingsView()) {
-                            Image(systemName: "gearshape.fill")
-                                .font(.system(size: 18, weight: .semibold))
-                                .foregroundColor(Theme.textPrimary)
-                        }
-                    }
-                }
-                .sheet(isPresented: $showingAddSheet) {
-                    AddActivityView(isPresented: $showingAddSheet, viewModel: viewModel)
-                }
-                .sheet(item: $selectedActivity) { activity in
-                    EditActivityView(activity: activity, viewModel: viewModel)
-                }
-                .onAppear { viewModel.fetchActivities() }
-                .onDisappear { viewModel.detachListener() }
-                .dismissKeyboardOnTap()
+                .listStyle(.plain)
+                .scrollContentBackground(.hidden)
+                .padding(.bottom, 80) // Space for bottom bar
+                
+                // Bottom Action Bar
+                bottomActionBar
             }
+            .navigationTitle("Extracurricular Hub")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: { menuManager.open() }) {
+                        Image(systemName: "line.3.horizontal")
+                            .font(.system(size: 20, weight: .semibold))
+                            .foregroundColor(Theme.textPrimary)
+                    }
+                }
+                
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    NavigationLink(destination: SettingsView()) {
+                        Image(systemName: "gearshape.fill")
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundColor(Theme.textPrimary)
+                    }
+                }
+            }
+            .sheet(isPresented: $showingAddSheet) {
+                AddActivityView(isPresented: $showingAddSheet, viewModel: viewModel)
+            }
+            .sheet(item: $selectedActivity) { activity in
+                EditActivityView(activity: activity, viewModel: viewModel)
+            }
+            .onAppear { viewModel.fetchActivities() }
+            .onDisappear { viewModel.detachListener() }
+            .dismissKeyboardOnTap()
         }
+    }
     
     // --- Components ---
     
@@ -142,11 +135,11 @@ struct ExtracurricularsView: View {
                             .foregroundColor(Theme.textPrimary)
                             .submitLabel(.done)
                         
-                        Button(action: { 
-                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) { 
+                        Button(action: {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                                 isSearching = false
-                                viewModel.searchText = "" 
-                            } 
+                                viewModel.searchText = ""
+                            }
                         }) {
                             Image(systemName: "xmark.circle.fill")
                                 .font(.system(size: 20, weight: .semibold))
@@ -167,10 +160,10 @@ struct ExtracurricularsView: View {
                     HStack(spacing: 12) {
                         Spacer()
                         
-                        Button(action: { 
-                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) { 
-                                isSearching = true 
-                            } 
+                        Button(action: {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                isSearching = true
+                            }
                         }) {
                             Image(systemName: "magnifyingglass")
                                 .font(.system(size: 18, weight: .semibold))
@@ -254,10 +247,13 @@ struct ImpactCard: View {
     }
 }
 
+// --- MINIMALIST ACTIVITY CARD with improved, student-friendly UI ---
 struct ActivityCard: View {
     let activity: Activity
     let onEdit: () -> Void
     let onDelete: () -> Void
+    
+    @State private var showingDescription = false
     
     var themeColor: Color {
         switch activity.type {
@@ -270,204 +266,125 @@ struct ActivityCard: View {
         }
     }
     
-    var icon: String {
-        switch activity.type {
-        case "Sport": return "sportscourt.fill"
-        case "Club": return "person.3.fill"
-        case "Service": return "heart.fill"
-        case "Award": return "rosette"
-        case "Work": return "briefcase.fill"
-        default: return "star.fill"
+    // Determines badge text color (white or black) based on brightness for contrast
+    var badgeTextColor: Color {
+        // Simple luminance check to decide text color
+        let uiColor = UIColor(themeColor)
+        var white: CGFloat = 0
+        uiColor.getWhite(&white, alpha: nil)
+        return white < 0.7 ? Color.white : Color.black
+    }
+    
+    var badgeText: String {
+        if let hours = activity.hours, hours > 0 {
+            return "\(Int(hours))h"
+        } else if activity.endDate == nil {
+            return "Active"
         }
+        return ""
     }
     
-    var durationString: String {
-        let start = activity.startDate.formatted(date: .abbreviated, time: .omitted)
-        let end = activity.endDate?.formatted(date: .abbreviated, time: .omitted) ?? "Present"
-        return "\(start) - \(end)"
-    }
-    
-    var isOngoing: Bool {
-        return activity.endDate == nil
+    var badgeAccessibilityLabel: String {
+        if let hours = activity.hours, hours > 0 {
+            return "\(Int(hours)) hours"
+        } else if activity.endDate == nil {
+            return "Active"
+        }
+        return ""
     }
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            // Top section with icon and main info
-            HStack(alignment: .top, spacing: 14) {
-                // Icon
-                ZStack {
-                    Circle()
-                        .fill(themeColor.opacity(0.15))
-                        .frame(width: 56, height: 56)
-                        .overlay(
-                            Circle()
-                                .stroke(themeColor.opacity(0.3), lineWidth: 2)
-                        )
-                    Image(systemName: icon)
-                        .foregroundColor(themeColor)
-                        .font(.system(size: 24, weight: .semibold))
-                }
-                
-                // Content
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(activity.title)
-                        .font(.system(.title3, design: .rounded))
-                        .fontWeight(.bold)
-                        .foregroundColor(Theme.textPrimary)
-                        .lineLimit(2)
-                    
-                    Text(activity.position)
-                        .font(.system(.subheadline, design: .rounded))
-                        .fontWeight(.semibold)
-                        .foregroundColor(Theme.textSecondary)
-                    
-                    HStack(spacing: 8) {
-                        // Type badge
-                        HStack(spacing: 4) {
-                            Image(systemName: "tag.fill")
-                                .font(.system(size: 10, weight: .semibold))
-                            Text(activity.type)
-                                .font(.system(size: 12, weight: .bold, design: .rounded))
-                        }
-                        .foregroundColor(themeColor)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 5)
-                        .background(themeColor.opacity(0.15))
-                        .cornerRadius(8)
-                        
-                        // Status badge for ongoing activities
-                        if isOngoing {
-                            HStack(spacing: 4) {
-                                Circle()
-                                    .fill(Theme.success)
-                                    .frame(width: 6, height: 6)
-                                Text("Active")
-                                    .font(.system(size: 12, weight: .bold, design: .rounded))
-                            }
-                            .foregroundColor(Theme.success)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 5)
-                            .background(Theme.success.opacity(0.15))
-                            .cornerRadius(8)
-                        }
-                    }
-                }
-                
-                Spacer()
-            }
-            .padding(16)
-            
-            // Middle section with stats
+        Button(action: onEdit) {
             HStack(spacing: 0) {
-                // Hours stat
-                if let hours = activity.hours, hours > 0 {
-                    VStack(spacing: 4) {
-                        HStack(spacing: 4) {
-                            Image(systemName: "clock.fill")
-                                .font(.system(size: 14, weight: .semibold))
-                            Text("\(Int(hours))")
-                                .font(.system(size: 24, weight: .heavy, design: .rounded))
-                        }
-                        .foregroundColor(themeColor)
-                        
-                        Text("HOURS")
-                            .font(.system(size: 10, weight: .bold, design: .rounded))
-                            .foregroundColor(Theme.textSecondary)
-                            .tracking(0.8)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 12)
-                    .background(themeColor.opacity(0.08))
-                    
-                    Divider()
-                }
+                // 1. Left vertical capsule color strip
+                Capsule()
+                    .fill(themeColor)
+                    .frame(width: 5)
+                    .edgesIgnoringSafeArea(.horizontal)
                 
-                // Duration stat
-                VStack(spacing: 4) {
-                    HStack(spacing: 4) {
-                        Image(systemName: "calendar")
-                            .font(.system(size: 14, weight: .semibold))
-                        Text(durationString)
-                            .font(.system(size: 11, weight: .bold, design: .rounded))
+                // 2. Main content VStack
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(alignment: .center, spacing: 6) {
+                        Text(activity.title)
+                            .font(.system(.body, design: .rounded))
+                            .fontWeight(.bold)
+                            .foregroundColor(Theme.textPrimary)
                             .lineLimit(1)
-                            .minimumScaleFactor(0.8)
+                        
+                        if let description = activity.description, !description.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                            Button {
+                                showingDescription = true
+                            } label: {
+                                Image(systemName: "info.circle.fill")
+                                    .foregroundColor(themeColor)
+                                    .font(.system(size: 14, weight: .semibold))
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                            .accessibilityLabel("Info about \(activity.title)")
+                            .alert(isPresented: $showingDescription) {
+                                Alert(
+                                    title: Text(activity.title),
+                                    message: Text(description),
+                                    dismissButton: .default(Text("Got it!"))
+                                )
+                            }
+                        }
                     }
-                    .foregroundColor(Theme.textPrimary)
                     
-                    Text("TIMELINE")
-                        .font(.system(size: 10, weight: .bold, design: .rounded))
-                        .foregroundColor(Theme.textSecondary)
-                        .tracking(0.8)
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 12)
-                .background(Theme.textSecondary.opacity(0.05))
-            }
-            
-            // Description section (if available)
-            if let description = activity.description, !description.isEmpty {
-                VStack(alignment: .leading, spacing: 8) {
                     HStack(spacing: 6) {
-                        Image(systemName: "text.alignleft")
-                            .font(.system(size: 12, weight: .semibold))
-                        Text("Description")
-                            .font(.system(size: 12, weight: .bold, design: .rounded))
+                        if !activity.position.isEmpty {
+                            Text(activity.position)
+                        }
+                        if !activity.position.isEmpty && !activity.type.isEmpty {
+                            Text("•")
+                        }
+                        if !activity.type.isEmpty {
+                            Text(activity.type)
+                        }
                     }
+                    .font(.caption)
                     .foregroundColor(Theme.textSecondary)
-                    
-                    Text(description)
-                        .font(.system(size: 14, weight: .regular, design: .rounded))
-                        .foregroundColor(Theme.textPrimary)
-                        .lineLimit(3)
+                    .lineLimit(1)
                 }
-                .padding(16)
-                .background(Theme.backgroundTertiary.opacity(0.5))
-            }
-            
-            // Bottom section with actions
-            Divider()
-            
-            HStack(spacing: 16) {
-                Button(action: onEdit) {
-                    HStack(spacing: 6) {
-                        Image(systemName: "pencil.circle.fill")
-                            .font(.system(size: 16, weight: .semibold))
-                        Text("Edit")
-                            .font(.system(size: 14, weight: .semibold, design: .rounded))
-                    }
-                    .foregroundColor(Theme.warning)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 10)
-                    .background(Theme.warning.opacity(0.1))
-                    .cornerRadius(10)
-                }
-                .buttonStyle(PlainButtonStyle())
                 
-                Button(action: onDelete) {
-                    HStack(spacing: 6) {
-                        Image(systemName: "trash.circle.fill")
-                            .font(.system(size: 16, weight: .semibold))
-                        Text("Delete")
-                            .font(.system(size: 14, weight: .semibold, design: .rounded))
-                    }
-                    .foregroundColor(Theme.danger)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 10)
-                    .background(Theme.danger.opacity(0.1))
-                    .cornerRadius(10)
+                Spacer(minLength: 12)
+                
+                // 3. Badge on right side
+                if !badgeText.isEmpty {
+                    Text(badgeText)
+                        .font(.system(size: 16, weight: .semibold, design: .rounded))
+                        .foregroundColor(badgeTextColor)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 6)
+                        .background(themeColor.opacity(0.25))
+                        .clipShape(Capsule())
+                        .accessibilityLabel(badgeAccessibilityLabel)
+                        .minimumScaleFactor(0.7)
+                        .lineLimit(1)
                 }
-                .buttonStyle(PlainButtonStyle())
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
+            .padding(.vertical, 16)
+            .padding(.horizontal, 20)
+            .background(Theme.cardBackground)
+            .cornerRadius(18)
+            .shadow(color: Theme.shadowLight, radius: 6, x: 0, y: 3)
         }
-        .background(Theme.cardBackground)
-        .cornerRadius(16)
-        .shadow(color: Theme.shadowMedium, radius: 8, x: 0, y: 3)
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(Theme.borderSubtle, lineWidth: 0.5)
-        )
+        .buttonStyle(PlainButtonStyle())
+        // Swipe Actions only inside ActivityCard
+        .swipeActions(edge: .leading) {
+            Button {
+                onEdit()
+            } label: {
+                Label("Edit", systemImage: "pencil")
+            }
+            .tint(.orange)
+        }
+        .swipeActions(edge: .trailing) {
+            Button(role: .destructive) {
+                onDelete()
+            } label: {
+                Label("Delete", systemImage: "trash")
+            }
+        }
     }
 }
