@@ -17,112 +17,221 @@ struct WellnessView: View {
             ZStack(alignment: .bottom) {
                 Theme.backgroundGrouped.ignoresSafeArea()
                 
-                List {
-                    // --- TITLE HEADER ---
-                    Section {
-                        header(title: "Wellness Hub", subtitle: "Track your daily balance", icon: "heart.fill", color: .pink)
-                            .listRowInsets(EdgeInsets())
-                            .listRowBackground(Color.clear)
-                            .padding(.top, 10)
-                    }
-                    
-                    if let log = viewModel.todayLog {
-                        // --- Wellness Summary Card ---
-                        Section {
-                            WellnessSummaryCard(
-                                log: log,
-                                streak: viewModel.currentStreak,
-                                onTapMood: { showingMoodDetail = true }
-                            )
-                            .listRowInsets(EdgeInsets())
-                            .listRowBackground(Color.clear)
-                            .padding(.horizontal, 16)
-                            .padding(.bottom, 10)
-                        }
-                        
-                        // --- Progress Rings ---
-                        Section {
-                            HStack(spacing: 20) {
-                                ProgressRing(value: log.sleepHours, total: WellnessLog.sleepGoal, icon: "moon.fill", color: .purple, label: "Sleep")
-                                ProgressRing(value: Double(log.waterIntake), total: Double(WellnessLog.waterGoal), icon: "drop.fill", color: .blue, label: "Water")
-                                ProgressRing(value: Double(log.exerciseMinutes), total: Double(WellnessLog.exerciseGoal), icon: "figure.run", color: .green, label: "Move")
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 24) {
+                        // --- TITLE HEADER ---
+                        HStack(spacing: 12) {
+                            Image(systemName: "heart.fill")
+                                .font(.system(size: 32, weight: .semibold))
+                                .foregroundColor(.pink)
+                                .padding(12)
+                                .background(
+                                    Circle()
+                                        .fill(Color.pink.opacity(0.15))
+                                )
+                                .overlay(
+                                    Circle()
+                                        .stroke(Color.pink.opacity(0.3), lineWidth: 2)
+                                )
+                            
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text("Wellness Hub")
+                                    .font(.system(.title2, design: .rounded))
+                                    .fontWeight(.bold)
+                                    .foregroundColor(Theme.textPrimary)
+                                Text("Track your daily balance")
+                                    .font(.system(.subheadline, design: .rounded))
+                                    .foregroundColor(Theme.textSecondary)
                             }
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 20)
-                            .listRowInsets(EdgeInsets())
-                            .listRowBackground(Color.clear)
+                            Spacer()
                         }
+                        .padding(.horizontal)
+                        .padding(.top, 10)
                         
-                        // --- Quick Actions ---
-                        Section(header: sectionHeader("Quick Actions")) {
-                            ControlCard(
-                                title: "Hydration",
-                                value: "\(log.waterIntake) oz",
-                                icon: "drop.fill",
-                                color: .blue,
-                                progress: Double(log.waterIntake) / Double(WellnessLog.waterGoal),
-                                onMinus: { viewModel.updateMetric(key: "waterIntake", value: max(0, log.waterIntake - 8)) },
-                                onPlus: { viewModel.updateMetric(key: "waterIntake", value: log.waterIntake + 8) }
-                            )
-                            .listRowSeparator(.hidden)
-                            .listRowBackground(Color.clear)
-                            .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                        if let log = viewModel.todayLog {
+                            // --- LARGE CURRENT DAY CARD ---
+                            VStack(spacing: 0) {
+                                // Top Section: Date, Mood, Streak
+                                VStack(spacing: 16) {
+                                    HStack {
+                                        VStack(alignment: .leading, spacing: 4) {
+                                            Text("Today")
+                                                .font(.system(.caption, design: .rounded))
+                                                .fontWeight(.semibold)
+                                                .foregroundColor(.white.opacity(0.8))
+                                                .textCase(.uppercase)
+                                                .tracking(1)
+                                            
+                                            Text(Date(), style: .date)
+                                                .font(.system(.title3, design: .rounded))
+                                                .fontWeight(.bold)
+                                                .foregroundColor(.white)
+                                        }
+                                        
+                                        Spacer()
+                                        
+                                        // Streak Badge
+                                        HStack(spacing: 6) {
+                                            Image(systemName: "flame.fill")
+                                                .font(.system(size: 16, weight: .semibold))
+                                            Text("\(viewModel.currentStreak)")
+                                                .font(.system(size: 20, weight: .bold, design: .rounded))
+                                            Text("day\(viewModel.currentStreak != 1 ? "s" : "")")
+                                                .font(.system(size: 12, weight: .semibold, design: .rounded))
+                                        }
+                                        .foregroundColor(.white)
+                                        .padding(.horizontal, 16)
+                                        .padding(.vertical, 10)
+                                        .background(Color.white.opacity(0.2))
+                                        .cornerRadius(12)
+                                    }
+                                    
+                                    // Mood Display
+                                    Button(action: { showingMoodDetail = true }) {
+                                        HStack(spacing: 12) {
+                                            Text(log.mood.wellnessMoodEmoji())
+                                                .font(.system(size: 40))
+                                            
+                                            VStack(alignment: .leading, spacing: 2) {
+                                                Text("Feeling")
+                                                    .font(.system(size: 11, weight: .semibold, design: .rounded))
+                                                    .foregroundColor(.white.opacity(0.8))
+                                                    .textCase(.uppercase)
+                                                    .tracking(0.5)
+                                                Text(log.mood)
+                                                    .font(.system(.title3, design: .rounded))
+                                                    .fontWeight(.bold)
+                                                    .foregroundColor(.white)
+                                            }
+                                            
+                                            Spacer()
+                                            
+                                            Image(systemName: "info.circle.fill")
+                                                .foregroundColor(.white.opacity(0.6))
+                                        }
+                                        .padding(16)
+                                        .background(Color.white.opacity(0.15))
+                                        .cornerRadius(16)
+                                    }
+                                    .buttonStyle(PlainButtonStyle())
+                                }
+                                .padding(24)
+                                .background(
+                                    LinearGradient(colors: [.pink, .orange], startPoint: .topLeading, endPoint: .bottomTrailing)
+                                )
+                                
+                                // Progress Rings Section
+                                HStack(spacing: 24) {
+                                    ProgressRing(value: log.sleepHours, total: WellnessLog.sleepGoal, icon: "moon.fill", color: .purple, label: "Sleep")
+                                    ProgressRing(value: Double(log.waterIntake), total: Double(WellnessLog.waterGoal), icon: "drop.fill", color: .blue, label: "Water")
+                                    ProgressRing(value: Double(log.exerciseMinutes), total: Double(WellnessLog.exerciseGoal), icon: "figure.run", color: .green, label: "Move")
+                                }
+                                .padding(.vertical, 28)
+                                .padding(.horizontal, 24)
+                                .background(Theme.cardBackground)
+                                
+                                // Quick Actions Section
+                                VStack(spacing: 12) {
+                                    ControlCard(
+                                        title: "Hydration",
+                                        value: "\(log.waterIntake) oz",
+                                        icon: "drop.fill",
+                                        color: .blue,
+                                        progress: Double(log.waterIntake) / Double(WellnessLog.waterGoal),
+                                        onMinus: { viewModel.updateMetric(key: "waterIntake", value: max(0, log.waterIntake - 8)) },
+                                        onPlus: { viewModel.updateMetric(key: "waterIntake", value: log.waterIntake + 8) }
+                                    )
+                                    
+                                    ControlCard(
+                                        title: "Movement",
+                                        value: "\(log.exerciseMinutes) min",
+                                        icon: "figure.run",
+                                        color: .green,
+                                        progress: Double(log.exerciseMinutes) / Double(WellnessLog.exerciseGoal),
+                                        onMinus: { viewModel.updateMetric(key: "exerciseMinutes", value: max(0, log.exerciseMinutes - 10)) },
+                                        onPlus: { viewModel.updateMetric(key: "exerciseMinutes", value: log.exerciseMinutes + 10) }
+                                    )
+                                    
+                                    ControlCard(
+                                        title: "Sleep",
+                                        value: "\(String(format: "%.1f", log.sleepHours)) hrs",
+                                        icon: "moon.fill",
+                                        color: .purple,
+                                        progress: log.sleepHours / WellnessLog.sleepGoal,
+                                        onMinus: { viewModel.updateMetric(key: "sleepHours", value: max(0, log.sleepHours - 0.5)) },
+                                        onPlus: { viewModel.updateMetric(key: "sleepHours", value: log.sleepHours + 0.5) }
+                                    )
+                                }
+                                .padding(24)
+                                .background(Theme.cardBackground)
+                                
+                                // Wellness Insight
+                                InsightCard(log: log)
+                                    .padding(24)
+                                    .background(Theme.cardBackground)
+                            }
+                            .cornerRadius(24)
+                            .shadow(color: Color.pink.opacity(0.3), radius: 20, x: 0, y: 10)
+                            .padding(.horizontal, 20)
                             
-                            ControlCard(
-                                title: "Movement",
-                                value: "\(log.exerciseMinutes) min",
-                                icon: "figure.run",
-                                color: .green,
-                                progress: Double(log.exerciseMinutes) / Double(WellnessLog.exerciseGoal),
-                                onMinus: { viewModel.updateMetric(key: "exerciseMinutes", value: max(0, log.exerciseMinutes - 10)) },
-                                onPlus: { viewModel.updateMetric(key: "exerciseMinutes", value: log.exerciseMinutes + 10) }
-                            )
-                            .listRowSeparator(.hidden)
-                            .listRowBackground(Color.clear)
-                            .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                            // --- COMPACT WEEKLY OVERVIEW ---
+                            if !viewModel.weekLogs.isEmpty {
+                                VStack(alignment: .leading, spacing: 12) {
+                                    Text("This Week")
+                                        .font(.system(.headline, design: .rounded))
+                                        .fontWeight(.bold)
+                                        .foregroundColor(Theme.textPrimary)
+                                        .padding(.horizontal, 24)
+                                    
+                                    WeeklyCompactView(logs: viewModel.weekLogs)
+                                }
+                                .padding(.top, 8)
+                            }
                             
-                            ControlCard(
-                                title: "Sleep",
-                                value: "\(String(format: "%.1f", log.sleepHours)) hrs",
-                                icon: "moon.fill",
-                                color: .purple,
-                                progress: log.sleepHours / WellnessLog.sleepGoal,
-                                onMinus: { viewModel.updateMetric(key: "sleepHours", value: max(0, log.sleepHours - 0.5)) },
-                                onPlus: { viewModel.updateMetric(key: "sleepHours", value: log.sleepHours + 0.5) }
-                            )
-                            .listRowSeparator(.hidden)
-                            .listRowBackground(Color.clear)
-                            .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
-                        }
-                        
-                        // --- Wellness Insights ---
-                        Section(header: sectionHeader("Today's Insight")) {
-                            InsightCard(log: log)
-                                .listRowSeparator(.hidden)
-                                .listRowBackground(Color.clear)
-                                .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
-                        }
-                        
-                        // --- Weekly Overview ---
-                        Section(header: sectionHeader("This Week")) {
-                            WeeklyOverviewCard(logs: viewModel.weekLogs)
-                                .listRowSeparator(.hidden)
-                                .listRowBackground(Color.clear)
-                                .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
-                        }
-                        
-                    } else {
-                        // --- Empty State ---
-                        Section {
+                            // --- COMPACT RECENT LOGS ---
+                            if viewModel.allLogs.count > 1 {
+                                VStack(alignment: .leading, spacing: 12) {
+                                    HStack {
+                                        Text("Recent Days")
+                                            .font(.system(.headline, design: .rounded))
+                                            .fontWeight(.bold)
+                                            .foregroundColor(Theme.textPrimary)
+                                        
+                                        Spacer()
+                                        
+                                        Button(action: { showingHistory = true }) {
+                                            HStack(spacing: 4) {
+                                                Text("View All")
+                                                    .font(.system(.subheadline, design: .rounded))
+                                                    .fontWeight(.semibold)
+                                                Image(systemName: "chevron.right")
+                                                    .font(.system(size: 12, weight: .semibold))
+                                            }
+                                            .foregroundColor(Theme.brandPrimary)
+                                        }
+                                    }
+                                    .padding(.horizontal, 24)
+                                    
+                                    ScrollView(.horizontal, showsIndicators: false) {
+                                        HStack(spacing: 12) {
+                                            ForEach(viewModel.allLogs.filter { !Calendar.current.isDateInToday($0.date) }.prefix(7), id: \.id) { log in
+                                                CompactLogCard(log: log)
+                                            }
+                                        }
+                                        .padding(.horizontal, 24)
+                                    }
+                                }
+                                .padding(.top, 8)
+                            }
+                            
+                        } else {
+                            // --- EMPTY STATE ---
                             emptyStateView
-                                .listRowBackground(Color.clear)
-                                .listRowInsets(EdgeInsets())
+                                .padding(.horizontal, 20)
                         }
                     }
+                    .padding(.bottom, 100)
                 }
-                .listStyle(.plain)
-                .scrollContentBackground(.hidden)
-                .padding(.bottom, 80)
                 
                 // --- Bottom Action Bar ---
                 bottomActionBar
@@ -174,14 +283,6 @@ struct WellnessView: View {
     }
     
     // --- Helper Views ---
-    
-    func sectionHeader(_ title: String) -> some View {
-        Text(title)
-            .font(.system(.headline, design: .rounded))
-            .fontWeight(.bold)
-            .foregroundColor(Theme.textPrimary)
-            .textCase(nil)
-    }
     
     var emptyStateView: some View {
         VStack(spacing: 25) {
@@ -538,73 +639,118 @@ struct ControlCard: View {
     }
 }
 
-struct WellnessSummaryCard: View {
-    let log: WellnessLog
-    let streak: Int
-    let onTapMood: () -> Void
+// MARK: - Compact Views for Past Days
+
+struct WeeklyCompactView: View {
+    let logs: [WellnessLog]
     
-    @State private var animateNumbers = false
+    var averageSleep: Double {
+        guard !logs.isEmpty else { return 0 }
+        return logs.map { $0.sleepHours }.reduce(0, +) / Double(logs.count)
+    }
+    
+    var averageWater: Double {
+        guard !logs.isEmpty else { return 0 }
+        return Double(logs.map { $0.waterIntake }.reduce(0, +)) / Double(logs.count)
+    }
+    
+    var averageExercise: Double {
+        guard !logs.isEmpty else { return 0 }
+        return Double(logs.map { $0.exerciseMinutes }.reduce(0, +)) / Double(logs.count)
+    }
     
     var body: some View {
-        HStack(spacing: 0) {
-            // Streak
-            VStack(spacing: 8) {
-                Image(systemName: "flame.fill")
-                    .font(.system(size: 20, weight: .semibold))
-                    .foregroundColor(.white.opacity(0.9))
-                
-                Text("\(streak)")
-                    .font(.system(size: 36, weight: .heavy, design: .rounded))
-                    .foregroundColor(.white)
-                
-                Text("DAY STREAK")
-                    .font(.system(size: 10, weight: .bold, design: .rounded))
-                    .foregroundColor(.white.opacity(0.85))
-                    .tracking(1.2)
-            }
-            .frame(maxWidth: .infinity)
-            
-            Rectangle()
-                .fill(Color.white.opacity(0.2))
-                .frame(width: 2, height: 50)
-            
-            // Mood
-            Button(action: onTapMood) {
-                VStack(spacing: 8) {
-                    Text(log.mood.wellnessMoodEmoji())
-                        .font(.system(size: 28))
-                    
-                    Text(log.mood.uppercased())
-                        .font(.system(size: 12, weight: .bold, design: .rounded))
-                        .foregroundColor(.white)
-                        .tracking(1)
-                    
-                    Text("MOOD")
-                        .font(.system(size: 10, weight: .bold, design: .rounded))
-                        .foregroundColor(.white.opacity(0.85))
-                        .tracking(1.2)
-                }
-                .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(PlainButtonStyle())
+        HStack(spacing: 16) {
+            CompactStatPill(icon: "moon.fill", color: .purple, value: "\(averageSleep, specifier: "%.1f")h", label: "Sleep")
+            CompactStatPill(icon: "drop.fill", color: .blue, value: "\(Int(averageWater))oz", label: "Water")
+            CompactStatPill(icon: "figure.run", color: .green, value: "\(Int(averageExercise))m", label: "Move")
         }
-        .padding(.horizontal, 24)
-        .padding(.vertical, 28)
-        .background(
-            LinearGradient(colors: [.pink, .orange], startPoint: .topLeading, endPoint: .bottomTrailing)
-        )
-        .cornerRadius(20)
-        .shadow(color: Color.pink.opacity(0.4), radius: 16, x: 0, y: 8)
-        .overlay(
-            RoundedRectangle(cornerRadius: 20)
-                .stroke(Color.white.opacity(0.2), lineWidth: 1)
-        )
-        .scaleEffect(animateNumbers ? 1.0 : 0.95)
-        .opacity(animateNumbers ? 1.0 : 0.0)
-        .onAppear {
-            withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
-                animateNumbers = true
+        .padding(.horizontal, 20)
+    }
+}
+
+struct CompactStatPill: View {
+    let icon: String
+    let color: Color
+    let value: String
+    let label: String
+    
+    var body: some View {
+        VStack(spacing: 8) {
+            HStack(spacing: 6) {
+                Image(systemName: icon)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(color)
+                
+                Text(value)
+                    .font(.system(.subheadline, design: .rounded))
+                    .fontWeight(.bold)
+                    .foregroundColor(Theme.textPrimary)
             }
+            
+            Text(label)
+                .font(.system(size: 10, weight: .semibold, design: .rounded))
+                .foregroundColor(Theme.textSecondary)
+                .textCase(.uppercase)
+                .tracking(0.5)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 14)
+        .background(Theme.cardBackground)
+        .cornerRadius(14)
+        .shadow(color: Theme.shadowLight, radius: 6, x: 0, y: 3)
+    }
+}
+
+struct CompactLogCard: View {
+    let log: WellnessLog
+    
+    var body: some View {
+        VStack(spacing: 10) {
+            // Date and Mood
+            VStack(spacing: 6) {
+                Text(log.date, format: .dateTime.month(.abbreviated).day())
+                    .font(.system(size: 12, weight: .bold, design: .rounded))
+                    .foregroundColor(Theme.textPrimary)
+                
+                Text(log.mood.wellnessMoodEmoji())
+                    .font(.system(size: 28))
+            }
+            
+            Divider()
+            
+            // Compact Stats
+            VStack(spacing: 8) {
+                CompactStatRow(icon: "moon.fill", color: .purple, value: "\(log.sleepHours, specifier: "%.1f")h")
+                CompactStatRow(icon: "drop.fill", color: .blue, value: "\(log.waterIntake)oz")
+                CompactStatRow(icon: "figure.run", color: .green, value: "\(log.exerciseMinutes)m")
+            }
+        }
+        .padding(16)
+        .frame(width: 140)
+        .background(Theme.cardBackground)
+        .cornerRadius(16)
+        .shadow(color: Theme.shadowLight, radius: 6, x: 0, y: 3)
+    }
+}
+
+struct CompactStatRow: View {
+    let icon: String
+    let color: Color
+    let value: String
+    
+    var body: some View {
+        HStack(spacing: 8) {
+            Image(systemName: icon)
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundColor(color)
+                .frame(width: 16)
+            
+            Text(value)
+                .font(.system(size: 13, weight: .semibold, design: .rounded))
+                .foregroundColor(Theme.textPrimary)
+            
+            Spacer()
         }
     }
 }
@@ -630,128 +776,22 @@ struct InsightCard: View {
         }
     }
     
-    var iconName: String {
-        let sleepPercent = (log.sleepHours / WellnessLog.sleepGoal) * 100
-        let waterPercent = (Double(log.waterIntake) / Double(WellnessLog.waterGoal)) * 100
-        let exercisePercent = (Double(log.exerciseMinutes) / Double(WellnessLog.exerciseGoal)) * 100
-        
-        if sleepPercent >= 100 && waterPercent >= 100 && exercisePercent >= 100 {
-            return "star.fill"
-        } else if sleepPercent < 80 {
-            return "moon.fill"
-        } else if waterPercent < 50 {
-            return "drop.fill"
-        } else if exercisePercent < 50 {
-            return "figure.walk"
-        } else {
-            return "sparkles"
-        }
-    }
-    
     var body: some View {
-        HStack(spacing: 16) {
-            Image(systemName: iconName)
-                .font(.system(size: 28))
-                .foregroundColor(.purple)
-                .frame(width: 50, height: 50)
-                .background(Color.purple.opacity(0.15))
-                .clipShape(Circle())
+        HStack(spacing: 12) {
+            Image(systemName: "lightbulb.fill")
+                .font(.system(size: 20))
+                .foregroundColor(.yellow)
             
             Text(insight)
-                .font(.system(.subheadline, design: .rounded))
-                .foregroundColor(Theme.textPrimary)
+                .font(.system(.caption, design: .rounded))
+                .foregroundColor(Theme.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
             
             Spacer(minLength: 0)
         }
-        .padding(20)
-        .background(Theme.cardBackground)
-        .cornerRadius(18)
-        .shadow(color: Theme.shadowLight, radius: 8, x: 0, y: 4)
-    }
-}
-
-struct WeeklyOverviewCard: View {
-    let logs: [WellnessLog]
-    
-    var averageSleep: Double {
-        guard !logs.isEmpty else { return 0 }
-        return logs.map { $0.sleepHours }.reduce(0, +) / Double(logs.count)
-    }
-    
-    var averageWater: Double {
-        guard !logs.isEmpty else { return 0 }
-        return Double(logs.map { $0.waterIntake }.reduce(0, +)) / Double(logs.count)
-    }
-    
-    var averageExercise: Double {
-        guard !logs.isEmpty else { return 0 }
-        return Double(logs.map { $0.exerciseMinutes }.reduce(0, +)) / Double(logs.count)
-    }
-    
-    var body: some View {
-        VStack(spacing: 16) {
-            HStack {
-                Text("Weekly Averages")
-                    .font(.system(.subheadline, design: .rounded))
-                    .fontWeight(.bold)
-                    .foregroundColor(Theme.textPrimary)
-                Spacer()
-                Text("\(logs.count) days logged")
-                    .font(.system(.caption, design: .rounded))
-                    .foregroundColor(Theme.textSecondary)
-            }
-            
-            if logs.isEmpty {
-                VStack(spacing: 8) {
-                    Image(systemName: "chart.bar.fill")
-                        .font(.system(size: 40))
-                        .foregroundColor(Theme.textSecondary.opacity(0.3))
-                    Text("Start logging to see your weekly trends")
-                        .font(.system(.caption, design: .rounded))
-                        .foregroundColor(Theme.textSecondary)
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 20)
-            } else {
-                VStack(spacing: 12) {
-                    WeeklyStatRow(icon: "moon.fill", color: .purple, label: "Sleep", value: "\(averageSleep, specifier: "%.1f") hrs")
-                    WeeklyStatRow(icon: "drop.fill", color: .blue, label: "Water", value: "\(Int(averageWater)) oz")
-                    WeeklyStatRow(icon: "figure.run", color: .green, label: "Exercise", value: "\(Int(averageExercise)) min")
-                }
-            }
-        }
-        .padding(20)
-        .background(Theme.cardBackground)
-        .cornerRadius(18)
-        .shadow(color: Theme.shadowLight, radius: 8, x: 0, y: 4)
-    }
-}
-
-struct WeeklyStatRow: View {
-    let icon: String
-    let color: Color
-    let label: String
-    let value: String
-    
-    var body: some View {
-        HStack {
-            Image(systemName: icon)
-                .foregroundColor(color)
-                .font(.system(size: 16, weight: .semibold))
-                .frame(width: 30)
-            
-            Text(label)
-                .font(.system(.subheadline, design: .rounded))
-                .foregroundColor(Theme.textPrimary)
-            
-            Spacer()
-            
-            Text(value)
-                .font(.system(.subheadline, design: .rounded))
-                .fontWeight(.bold)
-                .foregroundColor(color)
-        }
+        .padding(16)
+        .background(Color.yellow.opacity(0.1))
+        .cornerRadius(14)
     }
 }
 
