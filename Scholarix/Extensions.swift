@@ -14,3 +14,18 @@ extension View {
     }
 }
 #endif
+
+// MARK: - Wellness Mood Helper
+extension String {
+    /// Returns an emoji representation for wellness mood strings
+    func wellnessMoodEmoji() -> String {
+        switch self {
+        case "Energized": return "⚡️"
+        case "Content": return "😊"
+        case "Tired": return "😴"
+        case "Stressed": return "😰"
+        case "Anxious": return "😟"
+        default: return "😊"
+        }
+    }
+}
