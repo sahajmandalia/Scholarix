@@ -284,6 +284,20 @@ struct WellnessView: View {
     
     // --- Helper Views ---
     
+    func timeBasedGreeting() -> String {
+        let hour = Calendar.current.component(.hour, from: Date())
+        switch hour {
+        case 0..<12:
+            return "Good Morning!"
+        case 12..<17:
+            return "Good Afternoon!"
+        case 17..<21:
+            return "Good Evening!"
+        default:
+            return "Good Night!"
+        }
+    }
+    
     var emptyStateView: some View {
         VStack(spacing: 25) {
             Image(systemName: "sun.max.fill")
@@ -292,7 +306,7 @@ struct WellnessView: View {
                 .shadow(color: .orange.opacity(0.4), radius: 15)
                 .padding(.top, 40)
             
-            Text("Good Day!")
+            Text(timeBasedGreeting())
                 .font(.system(.title2, design: .rounded)).bold()
                 .foregroundColor(Theme.textPrimary)
             

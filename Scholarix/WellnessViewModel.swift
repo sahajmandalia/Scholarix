@@ -36,21 +36,13 @@ class WellnessViewModel: ObservableObject {
     
     /// Coordinates all data fetching to avoid excessive concurrent requests
     func fetchAllData() {
-        // Fetch today's log immediately as it's the most important
+        // Primary data fetch
         fetchTodayLog()
         
-        // Use a Task to stagger secondary fetches in a more reliable way
-        Task {
-            // Wait a brief moment for primary fetch to start
-            try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 seconds
-            await MainActor.run { self.fetchWeekLogs() }
-            
-            try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 seconds
-            await MainActor.run { self.fetchAllLogs() }
-            
-            try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 seconds
-            await MainActor.run { self.calculateStreak() }
-        }
+        // Secondary fetches - Firestore handles concurrency efficiently
+        fetchWeekLogs()
+        fetchAllLogs()
+        calculateStreak()
     }
     
     func fetchTodayLog() {
@@ -84,6 +76,7 @@ class WellnessViewModel: ObservableObject {
         
         weekListener = userWellnessCollection(uid)
             .whereField("date", isGreaterThanOrEqualTo: weekAgo)
+            .limit(to: 10) // Limit for performance consistency
             .addSnapshotListener { snapshot, error in
                 if let error = error {
                     self.errorMessage = error.localizedDescription
@@ -129,6 +122,8 @@ class WellnessViewModel: ObservableObject {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
         
+        // Note: Limited to 100 documents for performance. Maximum trackable streak is ~100 days.
+        // For users with longer streaks, consider implementing paginated streak calculation.
         userWellnessCollection(uid)
             .order(by: "date", descending: true)
             .limit(to: 100)
