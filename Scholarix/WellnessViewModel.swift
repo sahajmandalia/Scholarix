@@ -15,6 +15,8 @@ class WellnessViewModel: ObservableObject {
     private var listener: ListenerRegistration?
     private var weekListener: ListenerRegistration?
     private var allLogsListener: ListenerRegistration?
+    private var lastStreakCalculation: Date?
+    private var streakCalculationCache: Int = 0
     
     // Generates a consistent ID for today (e.g., "2025-12-25")
     private var todayDocId: String {
@@ -30,6 +32,24 @@ class WellnessViewModel: ObservableObject {
     
     private func userWellnessCollection(_ uid: String) -> CollectionReference {
         return db.collection("users").document(uid).collection("wellness")
+    }
+    
+    /// Coordinates all data fetching to avoid excessive concurrent requests
+    func fetchAllData() {
+        fetchTodayLog()
+        
+        // Stagger secondary fetches slightly to avoid simultaneous requests
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            self.fetchWeekLogs()
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            self.fetchAllLogs()
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            self.calculateStreak()
+        }
     }
     
     func fetchTodayLog() {
@@ -96,6 +116,13 @@ class WellnessViewModel: ObservableObject {
     }
     
     func calculateStreak() {
+        // Check if we already calculated today
+        if let lastCalc = lastStreakCalculation,
+           Calendar.current.isDateInToday(lastCalc) {
+            currentStreak = streakCalculationCache
+            return
+        }
+        
         guard let uid = Auth.auth().currentUser?.uid else { return }
         
         let calendar = Calendar.current
@@ -128,6 +155,8 @@ class WellnessViewModel: ObservableObject {
                 }
                 
                 self.currentStreak = streak
+                self.streakCalculationCache = streak
+                self.lastStreakCalculation = Date()
             }
     }
     
@@ -142,8 +171,15 @@ class WellnessViewModel: ObservableObject {
         )
         
         do {
-            try userWellnessRef(uid).setData(from: log)
-            // Immediately update local state to ensure UI updates
+            try userWellnessRef(uid).setData(from: log) { error in
+                if let error = error {
+                    self.errorMessage = error.localizedDescription
+                } else {
+                    // Successfully saved to Firestore, listener will update UI
+                    print("Wellness log created successfully")
+                }
+            }
+            // Optimistically update local state for immediate UI feedback
             self.todayLog = log
         } catch {
             self.errorMessage = error.localizedDescription

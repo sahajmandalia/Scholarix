@@ -167,10 +167,7 @@ struct WellnessView: View {
                 }
             }
             .onAppear {
-                viewModel.fetchTodayLog()
-                viewModel.fetchWeekLogs()
-                viewModel.fetchAllLogs()
-                viewModel.calculateStreak()
+                viewModel.fetchAllData()
             }
             .onDisappear { viewModel.detachListener() }
         }
@@ -440,14 +437,7 @@ struct WellnessView: View {
     }
     
     func moodEmoji(_ mood: String) -> String {
-        switch mood {
-        case "Energized": return "⚡️"
-        case "Content": return "😊"
-        case "Tired": return "😴"
-        case "Stressed": return "😰"
-        case "Anxious": return "😟"
-        default: return "😊"
-        }
+        mood.wellnessMoodEmoji()
     }
 }
 
@@ -532,9 +522,10 @@ struct ControlCard: View {
                 Button(action: onMinus) {
                     Image(systemName: "minus.circle.fill")
                         .font(.system(size: 28))
-                        .foregroundColor(color.opacity(0.7))
+                        .foregroundColor(color)
                 }
                 .frame(width: 44, height: 44)
+                .opacity(0.8)
                 
                 Button(action: onPlus) {
                     Image(systemName: "plus.circle.fill")
@@ -622,14 +613,7 @@ struct WellnessSummaryCard: View {
     }
     
     func moodEmoji(_ mood: String) -> String {
-        switch mood {
-        case "Energized": return "⚡️"
-        case "Content": return "😊"
-        case "Tired": return "😴"
-        case "Stressed": return "😰"
-        case "Anxious": return "😟"
-        default: return "😊"
-        }
+        mood.wellnessMoodEmoji()
     }
 }
 
@@ -878,14 +862,7 @@ struct HistoryLogCard: View {
     }
     
     func moodEmoji(_ mood: String) -> String {
-        switch mood {
-        case "Energized": return "⚡️"
-        case "Content": return "😊"
-        case "Tired": return "😴"
-        case "Stressed": return "😰"
-        case "Anxious": return "😟"
-        default: return "😊"
-        }
+        mood.wellnessMoodEmoji()
     }
 }
 
