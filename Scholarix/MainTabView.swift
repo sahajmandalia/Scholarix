@@ -18,23 +18,18 @@ struct MainTabView: View {
                 }
                 .tag(0)
             
-            // Hub 2: Health & Wellness (Coming Soon)
-            ComingSoonView(
-                icon: "heart.fill",
-                title: "Wellness Hub",
-                subtitle: "Track your health and habits",
-                color: .pink
-            )
-            .tabItem {
-                Label {
-                    Text("Wellness")
-                        .font(.system(.caption, design: .rounded))
-                } icon: {
-                    Image(systemName: selectedTab == 1 ? "heart.fill" : "heart")
-                        .environment(\.symbolVariants, selectedTab == 1 ? .fill : .none)
+            // Hub 2: Health & Wellness - UPDATED FROM ComingSoonView TO WellnessView
+            WellnessView()
+                .tabItem {
+                    Label {
+                        Text("Wellness")
+                            .font(.system(.caption, design: .rounded))
+                    } icon: {
+                        Image(systemName: selectedTab == 1 ? "heart.fill" : "heart")
+                            .environment(\.symbolVariants, selectedTab == 1 ? .fill : .none)
+                    }
                 }
-            }
-            .tag(1)
+                .tag(1)
             
             // Hub 3: AI Coach (Coming Soon)
             ComingSoonView(
@@ -82,7 +77,7 @@ struct MainTabView: View {
     }
 }
 
-// MARK: - Coming Soon View
+// MARK: - Coming Soon View (Remains unchanged for other placeholders)
 struct ComingSoonView: View {
     let icon: String
     let title: String
@@ -142,12 +137,4 @@ struct ComingSoonView: View {
             }
         }
     }
-}
-
-#Preview {
-    MainTabView()
-}
-
-#Preview {
-    MainTabView()
 }

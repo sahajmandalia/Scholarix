@@ -10,7 +10,10 @@ struct ColorHelper {
 // --- MAIN VIEW ---
 struct CalendarView: View {
     let deadlines: [Deadline]
-    @Binding var selectedDeadline: Deadline?
+    
+    // CHANGED: Replaced Binding with two distinct actions
+    var onSelect: (Deadline) -> Void
+    var onEdit: (Deadline) -> Void
     
     var onDelete: ((Deadline) -> Void)? = nil
     var onToggle: ((Deadline) -> Void)? = nil
@@ -125,8 +128,14 @@ struct CalendarView: View {
                         } else {
                             VStack(spacing: 12) {
                                 ForEach(dailyTasks.sorted(by: { $0.dueDate < $1.dueDate })) { task in
-                                    ScheduleRow(item: task, onEdit: { selectedDeadline = $0 }, onDelete: onDelete, onToggle: onToggle)
-                                        .padding(.horizontal)
+                                    ScheduleRow(
+                                        item: task,
+                                        onSelect: onSelect, // Pass selection handler
+                                        onEdit: onEdit,     // Pass edit handler
+                                        onDelete: onDelete,
+                                        onToggle: onToggle
+                                    )
+                                    .padding(.horizontal)
                                 }
                             }
                         }
@@ -136,7 +145,7 @@ struct CalendarView: View {
                 .padding(.vertical)
             }
             .background(Color(.systemGroupedBackground))
-            .blur(radius: showDayView ? 5 : 0) // Blur background when overlay is active
+            .blur(radius: showDayView ? 5 : 0)
             
             // Full Screen Day View Overlay
             if showDayView {
@@ -144,6 +153,8 @@ struct CalendarView: View {
                     date: selectedDate,
                     deadlines: deadlines.filter { calendar.isDate($0.dueDate, inSameDayAs: selectedDate) },
                     namespace: animation,
+                    onSelect: onSelect, // Pass handler
+                    onEdit: onEdit,     // Pass handler
                     onToggle: onToggle,
                     onDismiss: { withAnimation(.spring()) { showDayView = false } }
                 )
@@ -257,8 +268,13 @@ struct DayCell: View {
 
 struct ScheduleRow: View {
     let item: Deadline
+    // CHANGED: Added callbacks
+    let onSelect: (Deadline) -> Void
     let onEdit: (Deadline) -> Void
     var onDelete: ((Deadline) -> Void)?, onToggle: ((Deadline) -> Void)?
+    
+    // CHANGED: Added state for animation
+    @State private var isPressed = false
     
     var body: some View {
         HStack(spacing: 0) {
@@ -313,6 +329,7 @@ struct ScheduleRow: View {
             
             Spacer()
             
+            // Menu
             Menu {
                 Button { onEdit(item) } label: { Label("Edit", systemImage: "pencil") }
                 Button(role: .destructive) { onDelete?(item) } label: { Label("Delete", systemImage: "trash") }
@@ -327,6 +344,20 @@ struct ScheduleRow: View {
         .background(Color(.secondarySystemGroupedBackground))
         .cornerRadius(16)
         .shadow(color: .black.opacity(0.03), radius: 5, x: 0, y: 2)
+        // CHANGED: Added Tap Gesture
+        .scaleEffect(isPressed ? 0.97 : 1.0)
+        .animation(.spring(response: 0.2, dampingFraction: 0.6), value: isPressed)
+        .onTapGesture {
+            withAnimation(.spring(response: 0.2, dampingFraction: 0.7)) {
+                isPressed = true
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                withAnimation(.spring(response: 0.2, dampingFraction: 0.7)) {
+                    isPressed = false
+                }
+                onSelect(item)
+            }
+        }
     }
     
     func formatTimeRange(start: Date, end: Date?) -> String {
@@ -336,11 +367,15 @@ struct ScheduleRow: View {
     }
 }
 
-// --- HOURLY VIEW (With Correct Geometry Logic) ---
+// --- HOURLY VIEW ---
 struct HourlyScheduleView: View {
     let date: Date
     let deadlines: [Deadline]
     var namespace: Namespace.ID
+    
+    // CHANGED: Added callbacks
+    var onSelect: (Deadline) -> Void
+    var onEdit: (Deadline) -> Void
     var onToggle: ((Deadline) -> Void)?
     var onDismiss: () -> Void
     
@@ -370,7 +405,6 @@ struct HourlyScheduleView: View {
         var result: [PlacedItem] = []
         var columns: [[Deadline]] = []
         
-        // Arrange items into columns to handle overlaps
         for item in sorted {
             var placed = false
             for (i, column) in columns.enumerated() {
@@ -441,6 +475,8 @@ struct HourlyScheduleView: View {
                             ForEach(allDayItems) { item in
                                 TaskBubble(deadline: item, onToggle: onToggle)
                                     .frame(width: 160)
+                                    // CHANGED: Link tap for all-day items
+                                    .onTapGesture { onSelect(item) }
                             }
                         }
                         .padding(.horizontal)
@@ -491,6 +527,8 @@ struct HourlyScheduleView: View {
                                     TaskBubble(deadline: item.deadline, onToggle: onToggle)
                                         .frame(width: columnWidth - 8, height: item.height)
                                         .position(x: x + (columnWidth - 8)/2, y: item.yOffset + item.height/2 + 20)
+                                        // CHANGED: Link tap for timed items
+                                        .onTapGesture { onSelect(item.deadline) }
                                 }
                             }
                             .frame(

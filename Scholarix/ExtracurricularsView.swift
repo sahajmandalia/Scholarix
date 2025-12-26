@@ -4,14 +4,38 @@ struct ExtracurricularsView: View {
     @StateObject private var viewModel = ExtracurricularsViewModel()
     @EnvironmentObject var menuManager: MenuManager
     
+    // --- Navigation State ---
+    @State private var activityForDetail: Activity?
+    @State private var activityForEdit: Activity?
+    
     @State private var showingAddSheet = false
-    @State private var selectedActivity: Activity?
     @State private var isSearching = false
     
     var body: some View {
         NavigationStack {
             ZStack(alignment: .bottom) {
                 Theme.backgroundGrouped.ignoresSafeArea()
+                
+                // --- Navigation Links (Headless) ---
+                Group {
+                    // 1. Detail View
+                    if let activity = activityForDetail {
+                        NavigationLink(
+                            destination: ActivityDetailView(viewModel: viewModel, activityId: activity.id ?? ""),
+                            tag: activity.id ?? "",
+                            selection: Binding(get: { activityForDetail?.id }, set: { _ in self.activityForDetail = nil })
+                        ) { EmptyView() }
+                    }
+                    
+                    // 2. Edit View
+                    if let activity = activityForEdit {
+                        NavigationLink(
+                            destination: EditActivityView(activity: activity, viewModel: viewModel),
+                            tag: activity.id ?? "",
+                            selection: Binding(get: { activityForEdit?.id }, set: { _ in self.activityForEdit = nil })
+                        ) { EmptyView() }
+                    }
+                }
                 
                 // Content
                 List {
@@ -43,7 +67,8 @@ struct ExtracurricularsView: View {
                             ForEach(viewModel.filteredActivities) { activity in
                                 ActivityCard(
                                     activity: activity,
-                                    onEdit: { selectedActivity = activity },
+                                    onSelect: { activityForDetail = activity }, // Tap card -> Detail
+                                    onEdit: { activityForEdit = activity },     // Edit button -> Edit Screen
                                     onDelete: { viewModel.deleteActivity(activity) }
                                 )
                                 .listRowSeparator(.hidden)
@@ -81,9 +106,6 @@ struct ExtracurricularsView: View {
             }
             .sheet(isPresented: $showingAddSheet) {
                 AddActivityView(isPresented: $showingAddSheet, viewModel: viewModel)
-            }
-            .sheet(item: $selectedActivity) { activity in
-                EditActivityView(activity: activity, viewModel: viewModel)
             }
             .onAppear { viewModel.fetchActivities() }
             .onDisappear { viewModel.detachListener() }
@@ -267,6 +289,7 @@ struct ImpactCard: View {
 // --- ACTIVITY CARD - Redesigned to match CourseCard format ---
 struct ActivityCard: View {
     let activity: Activity
+    let onSelect: () -> Void // New selection handler
     let onEdit: () -> Void
     let onDelete: () -> Void
     
@@ -393,7 +416,7 @@ struct ActivityCard: View {
                 withAnimation(.spring(response: 0.2, dampingFraction: 0.7)) {
                     isPressed = false
                 }
-                onEdit()
+                onSelect() // Triggers navigation to Detail View
             }
         }
         .swipeActions(edge: .leading) {

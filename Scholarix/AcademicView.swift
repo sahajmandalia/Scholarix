@@ -6,11 +6,18 @@ struct AcademicView: View {
     
     // UI State
     @State private var showingAddSheet = false
-    @State private var selectedCourse: Course?
-    @State private var selectedDeadline: Deadline?
     @State private var selectedTab = 0 // 0: Courses, 1: Planner
     @State private var isListMode = false
     @State private var isSearching = false
+    
+    // --- Navigation State ---
+    // State for Editing (Swipe/Menu)
+    @State private var selectedCourse: Course?
+    @State private var selectedDeadline: Deadline?
+    
+    // State for Details (Card Tap)
+    @State private var courseForDetail: Course?
+    @State private var deadlineForDetail: Deadline?
     
     var body: some View {
         NavigationStack {
@@ -19,10 +26,18 @@ struct AcademicView: View {
                 
                 // --- Navigation Links (Headless) ---
                 Group {
+                    // 1. Edit Links
                     NavigationLink(destination: EditCourseView(viewModel: viewModel, courseToEdit: selectedCourse ?? Course.placeholder()), tag: selectedCourse ?? Course.placeholder(), selection: $selectedCourse) { EmptyView() }
                     
                     if let deadline = selectedDeadline {
                         NavigationLink(destination: EditDeadlineView(viewModel: viewModel, deadlineToEdit: deadline), tag: deadline.id ?? "", selection: Binding(get: { selectedDeadline?.id }, set: { _ in self.selectedDeadline = nil })) { EmptyView() }
+                    }
+                    
+                    // 2. Detail Links
+                    NavigationLink(destination: CourseDetailView(viewModel: viewModel, courseId: courseForDetail?.id ?? ""), tag: courseForDetail ?? Course.placeholder(), selection: $courseForDetail) { EmptyView() }
+                    
+                    if let deadline = deadlineForDetail {
+                        NavigationLink(destination: DeadlineDetailView(viewModel: viewModel, deadlineId: deadline.id ?? ""), tag: deadline.id ?? "", selection: Binding(get: { deadlineForDetail?.id }, set: { _ in self.deadlineForDetail = nil })) { EmptyView() }
                     }
                 }
                 
@@ -131,7 +146,8 @@ struct AcademicView: View {
                     ForEach(viewModel.filteredCourses) { course in
                         CourseCard(
                             course: course,
-                            onEdit: { selectedCourse = course },
+                            onSelect: { courseForDetail = course }, // Link tap to Detail
+                            onEdit: { selectedCourse = course },    // Link edit to Edit
                             onDelete: { viewModel.deleteCourse(course: course) }
                         )
                         .listRowSeparator(.hidden)
@@ -161,7 +177,8 @@ struct AcademicView: View {
                                 TaskRowCard(
                                     deadline: deadline,
                                     viewModel: viewModel,
-                                    onEdit: { selectedDeadline = deadline },
+                                    onSelect: { deadlineForDetail = deadline }, // Link tap to Detail
+                                    onEdit: { selectedDeadline = deadline },    // Link edit to Edit
                                     onDelete: { viewModel.deleteDeadline(deadline: deadline) }
                                 )
                                 .swipeActions(edge: .leading) {
@@ -181,9 +198,11 @@ struct AcademicView: View {
                 .scrollContentBackground(.hidden)
                 .padding(.bottom, 80)
             } else {
+                // IMPORTANT: Ensure your CalendarView handles onSelect and onEdit
                 CalendarView(
                     deadlines: viewModel.filteredDeadlines,
-                    selectedDeadline: $selectedDeadline,
+                    onSelect: { deadlineForDetail = $0 },
+                    onEdit: { selectedDeadline = $0 },
                     onDelete: { viewModel.deleteDeadline(deadline: $0) },
                     onToggle: { viewModel.toggleCompletion(deadline: $0) }
                 )
@@ -321,9 +340,10 @@ struct GPACard: View {
     }
 }
 
-// --- MINIMALIST COURSE CARD (Redesigned) ---
+// --- MINIMALIST COURSE CARD ---
 struct CourseCard: View {
     let course: Course
+    let onSelect: () -> Void // New Handler
     let onEdit: () -> Void
     let onDelete: () -> Void
     
@@ -347,14 +367,12 @@ struct CourseCard: View {
     
     var body: some View {
         HStack(spacing: 16) {
-            // Vertical Capsule level indicator
             Capsule()
                 .fill(levelColor)
                 .frame(width: 6)
                 .padding(.vertical, 16)
             
             VStack(alignment: .leading, spacing: 6) {
-                // Course name
                 Text(course.name)
                     .font(.system(.body, design: .rounded))
                     .fontWeight(.bold)
@@ -362,7 +380,6 @@ struct CourseCard: View {
                     .lineLimit(1)
                 
                 HStack(spacing: 8) {
-                    // Level badge
                     Text(course.courseLevel)
                         .font(.caption)
                         .fontWeight(.semibold)
@@ -372,7 +389,6 @@ struct CourseCard: View {
                         .foregroundColor(levelColor)
                         .clipShape(Capsule())
                     
-                    // Credits text
                     Text("\(course.credits, specifier: "%.1f") cr")
                         .font(.caption)
                         .foregroundColor(.secondary)
@@ -381,7 +397,6 @@ struct CourseCard: View {
             
             Spacer()
             
-            // Grade Badge
             Group {
                 if let grade = course.gradePercent {
                     Text("\(grade, specifier: "%.0f")%")
@@ -392,7 +407,6 @@ struct CourseCard: View {
                         .padding(.horizontal, 14)
                         .background(gradeColor(for: grade))
                         .clipShape(Capsule())
-                        .accessibilityLabel("Grade \(Int(grade)) percent")
                 } else {
                     Text("--")
                         .font(.title3)
@@ -402,7 +416,6 @@ struct CourseCard: View {
                         .padding(.horizontal, 14)
                         .background(Color.gray.opacity(0.3))
                         .clipShape(Capsule())
-                        .accessibilityLabel("Grade not available")
                 }
             }
         }
@@ -422,7 +435,7 @@ struct CourseCard: View {
                 withAnimation(.spring(response: 0.2, dampingFraction: 0.7)) {
                     isPressed = false
                 }
-                onEdit()
+                onSelect() // Triggers Detail View
             }
         }
         .swipeActions(edge: .leading) {
@@ -437,6 +450,7 @@ struct CourseCard: View {
 struct TaskRowCard: View {
     let deadline: Deadline
     let viewModel: AcademicViewModel
+    let onSelect: () -> Void // New Handler
     let onEdit: () -> Void
     var onDelete: (() -> Void)? = nil
     
@@ -455,13 +469,11 @@ struct TaskRowCard: View {
     
     var body: some View {
         HStack(spacing: 16) {
-            // Vertical Capsule indicator (matching CourseCard and ActivityCard)
             Capsule()
                 .fill(deadline.isCompleted ? Color.gray.opacity(0.3) : typeColor)
                 .frame(width: 6)
                 .padding(.vertical, 16)
             
-            // Checkmark Button
             Button(action: {
                 withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                     viewModel.toggleCompletion(deadline: deadline)
@@ -482,7 +494,6 @@ struct TaskRowCard: View {
                     .lineLimit(1)
                 
                 HStack(spacing: 8) {
-                    // Type badge (matching CourseCard and ActivityCard style)
                     if !deadline.isCompleted {
                         Text(deadline.type.uppercased())
                             .font(.caption)
@@ -494,7 +505,6 @@ struct TaskRowCard: View {
                             .clipShape(Capsule())
                     }
                     
-                    // Date
                     HStack(spacing: 4) {
                         Image(systemName: "calendar")
                             .font(.system(size: 10, weight: .semibold))
@@ -507,7 +517,6 @@ struct TaskRowCard: View {
             
             Spacer()
             
-            // 3-Dots Menu
             Menu {
                 Button(action: onEdit) { Label("Edit", systemImage: "pencil") }
                 if let onDelete = onDelete {
@@ -537,7 +546,7 @@ struct TaskRowCard: View {
                 withAnimation(.spring(response: 0.2, dampingFraction: 0.7)) {
                     isPressed = false
                 }
-                onEdit()
+                onSelect() // Triggers Detail View
             }
         }
     }
