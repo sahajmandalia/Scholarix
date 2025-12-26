@@ -77,10 +77,10 @@ struct AcademicView: View {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     HStack(spacing: 16) {
                         if selectedTab == 1 {
-                            Button(action: { 
-                                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) { 
-                                    isListMode.toggle() 
-                                } 
+                            Button(action: {
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                    isListMode.toggle()
+                                }
                             }) {
                                 Image(systemName: isListMode ? "calendar" : "list.bullet")
                                     .font(.system(size: 18, weight: .semibold))
@@ -214,11 +214,11 @@ struct AcademicView: View {
                     HStack {
                         Image(systemName: "magnifyingglass").foregroundColor(.gray)
                         TextField("Search...", text: $viewModel.searchText).submitLabel(.done)
-                        Button(action: { 
-                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) { 
+                        Button(action: {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                                 isSearching = false
-                                viewModel.searchText = "" 
-                            } 
+                                viewModel.searchText = ""
+                            }
                         }) {
                             Image(systemName: "xmark.circle.fill").foregroundColor(.secondary)
                         }
@@ -232,10 +232,10 @@ struct AcademicView: View {
                 } else {
                     HStack {
                         Spacer()
-                        Button(action: { 
-                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) { 
-                                isSearching = true 
-                            } 
+                        Button(action: {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                isSearching = true
+                            }
                         }) {
                             Image(systemName: "magnifyingglass")
                                 .font(.title3)
@@ -247,9 +247,9 @@ struct AcademicView: View {
                         }
                         .transition(.scale.combined(with: .opacity))
                         
-                        Button(action: { 
+                        Button(action: {
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                showingAddSheet = true 
+                                showingAddSheet = true
                             }
                         }) {
                             HStack(spacing: 8) {
@@ -414,7 +414,7 @@ struct CourseCard: View {
         .scaleEffect(isPressed ? 0.97 : 1.0)
         .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isPressed)
         .contentShape(Rectangle())
-        .onTapGesture { 
+        .onTapGesture {
             withAnimation(.spring(response: 0.2, dampingFraction: 0.7)) {
                 isPressed = true
             }
@@ -462,10 +462,10 @@ struct TaskRowCard: View {
                 .padding(.vertical, 16)
             
             // Checkmark Button
-            Button(action: { 
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) { 
-                    viewModel.toggleCompletion(deadline: deadline) 
-                } 
+            Button(action: {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                    viewModel.toggleCompletion(deadline: deadline)
+                }
             }) {
                 Image(systemName: deadline.isCompleted ? "checkmark.circle.fill" : "circle")
                     .font(.system(size: 24, weight: .semibold))

@@ -1,12 +1,25 @@
 import FirebaseCore
 import UIKit
+import UserNotifications
 
-// This class handles the app's startup process, like connecting to Firebase.
-class AppDelegate: NSObject, UIApplicationDelegate {
-  func application(_ application: UIApplication,
-                   didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
-    // This is the line that officially configures and "turns on" Firebase.
-    FirebaseApp.configure()
-    return true
-  }
+class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
+    func application(_ application: UIApplication,
+                     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
+        FirebaseApp.configure()
+        
+        // Set delegate to handle foreground notifications
+        UNUserNotificationCenter.current().delegate = self
+        
+        // Request notification permissions immediately on first launch
+        NotificationManager.shared.requestPermission()
+        
+        return true
+    }
+    
+    // This allows notifications to show up while the app is in the foreground
+    func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                willPresent notification: UNNotification,
+                                withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        completionHandler([.banner, .sound, .badge])
+    }
 }

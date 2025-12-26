@@ -55,8 +55,8 @@ struct AddCourseView: View {
                                     .font(.system(.body, design: .rounded))
                                 Spacer()
                                 Picker("Grade Taken", selection: $gradeLevel) {
-                                    ForEach(gradeLevels, id: \.self) { level in 
-                                        Text("\(level)th").tag(level) 
+                                    ForEach(gradeLevels, id: \.self) { level in
+                                        Text("\(level)th").tag(level)
                                     }
                                 }
                                 .pickerStyle(.menu)
@@ -76,8 +76,8 @@ struct AddCourseView: View {
                                     .font(.system(.body, design: .rounded))
                                 Spacer()
                                 Picker("Level", selection: $courseLevel) {
-                                    ForEach(courseLevels, id: \.self) { level in 
-                                        Text(level).tag(level) 
+                                    ForEach(courseLevels, id: \.self) { level in
+                                        Text(level).tag(level)
                                     }
                                 }
                                 .pickerStyle(.menu)
@@ -204,4 +204,3 @@ struct AddCourseView: View {
         }
     }
 }
-

@@ -9,7 +9,6 @@ class ExtracurricularsViewModel: ObservableObject {
     @Published var searchText = ""
     @Published var errorMessage: String?
     
-    // Derived property for search filtering
     var filteredActivities: [Activity] {
         if searchText.isEmpty { return activities }
         return activities.filter {
@@ -19,7 +18,6 @@ class ExtracurricularsViewModel: ObservableObject {
         }
     }
     
-    // Statistics for the Impact Card
     var totalHours: Double {
         activities.reduce(0) { $0 + ($1.hours ?? 0) }
     }
@@ -30,6 +28,7 @@ class ExtracurricularsViewModel: ObservableObject {
     
     private var listener: ListenerRegistration?
     
+    // RESTORED: Standard Firestore path for activities
     private func userActivitiesRef(_ uid: String) -> CollectionReference {
         return Firestore.firestore()
             .collection(Constants.Firestore.root).document(Constants.appId)

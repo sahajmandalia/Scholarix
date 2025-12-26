@@ -67,14 +67,6 @@ struct SideMenuView: View {
                             menuManager.openSettings()
                         }
                         
-                        MenuRow(
-                            icon: "doc.richtext.fill",
-                            title: "Resume",
-                            color: Theme.brandAccent
-                        ) {
-                            menuManager.close()
-                        }
-                        
                         // Help Link
                         Link(destination: URL(string: "https://sites.google.com/view/scholarixapp/about-support")!) {
                             HStack(spacing: 14) {

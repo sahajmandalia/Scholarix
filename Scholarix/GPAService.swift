@@ -3,6 +3,7 @@ import FirebaseFirestore
 
 struct GPAService {
     
+    // Existing unified calculation method
     static func calculate(courses: [Course]) -> (unweighted: String, weighted: String) {
         let gradedCourses = courses.filter { $0.gradePercent != nil }
         
@@ -33,13 +34,24 @@ struct GPAService {
             return ("0.00", "0.00")
         }
     }
+
+    // --- ADD THESE METHODS TO FIX YOUR COMPILER ERRORS ---
+
+    /// Returns only the Weighted GPA as a String
+    static func calculateWeightedGPA(courses: [Course]) -> String {
+        return calculate(courses: courses).weighted
+    }
+
+    /// Returns only the Unweighted GPA as a String
+    static func calculateUnweightedGPA(courses: [Course]) -> String {
+        return calculate(courses: courses).unweighted
+    }
     
     private static func gradePoints(grade: Double, level: String) -> (unweighted: Double, weighted: Double) {
         var unweightedPoint: Double = 0.0
         
-        // FIX: Check if the grade is on a 4.0 scale (e.g., user entered "3.8" or "4.0")
+        // Check if the grade is on a 4.0 scale (e.g., user entered "3.8" or "4.0")
         if grade <= 5.0 && grade >= 0.0 {
-            // Assume the user entered the points directly
             unweightedPoint = grade
         } else {
             // Assume 100-point scale

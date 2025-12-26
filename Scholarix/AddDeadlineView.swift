@@ -62,8 +62,8 @@ struct AddDeadlineView: View {
                                     .font(.system(.body, design: .rounded))
                                     .foregroundColor(Theme.textPrimary)
                                 Spacer()
-                                Picker("Type", selection: $type) { 
-                                    ForEach(types, id: \.self) { Text($0).tag($0) } 
+                                Picker("Type", selection: $type) {
+                                    ForEach(types, id: \.self) { Text($0).tag($0) }
                                 }
                                 .pickerStyle(.menu)
                                 .accentColor(Theme.brandPrimary)
