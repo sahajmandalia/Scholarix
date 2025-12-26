@@ -353,7 +353,7 @@ struct WellnessView: View {
                                 ForEach(moods, id: \.self) { mood in
                                     Button(action: { inputMood = mood }) {
                                         VStack(spacing: 6) {
-                                            Text(moodEmoji(mood))
+                                            Text(mood.wellnessMoodEmoji())
                                                 .font(.system(size: 28))
                                             Text(mood)
                                                 .font(.system(size: 11, weight: .semibold, design: .rounded))
@@ -435,10 +435,6 @@ struct WellnessView: View {
             }
         }
     }
-    
-    func moodEmoji(_ mood: String) -> String {
-        mood.wellnessMoodEmoji()
-    }
 }
 
 // MARK: - UI Components
@@ -509,7 +505,7 @@ struct ControlCard: View {
                         Capsule()
                             .fill(color)
                             .frame(width: geometry.size.width * min(progress, 1.0), height: 4)
-                            .animation(.spring(), value: progress)
+                            .animation(.spring(response: 0.5, dampingFraction: 0.6), value: progress)
                     }
                 }
                 .frame(height: 4)
@@ -575,7 +571,7 @@ struct WellnessSummaryCard: View {
             // Mood
             Button(action: onTapMood) {
                 VStack(spacing: 8) {
-                    Text(moodEmoji(log.mood))
+                    Text(log.mood.wellnessMoodEmoji())
                         .font(.system(size: 28))
                     
                     Text(log.mood.uppercased())
@@ -610,10 +606,6 @@ struct WellnessSummaryCard: View {
                 animateNumbers = true
             }
         }
-    }
-    
-    func moodEmoji(_ mood: String) -> String {
-        mood.wellnessMoodEmoji()
     }
 }
 
@@ -832,7 +824,7 @@ struct HistoryLogCard: View {
                         .foregroundColor(Theme.textPrimary)
                     
                     HStack(spacing: 4) {
-                        Text(moodEmoji(log.mood))
+                        Text(log.mood.wellnessMoodEmoji())
                             .font(.system(size: 14))
                         Text(log.mood)
                             .font(.system(.caption, design: .rounded))
@@ -859,10 +851,6 @@ struct HistoryLogCard: View {
         .background(Theme.cardBackground)
         .cornerRadius(18)
         .shadow(color: Theme.shadowLight, radius: 8, x: 0, y: 4)
-    }
-    
-    func moodEmoji(_ mood: String) -> String {
-        mood.wellnessMoodEmoji()
     }
 }
 

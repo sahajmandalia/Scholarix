@@ -36,19 +36,20 @@ class WellnessViewModel: ObservableObject {
     
     /// Coordinates all data fetching to avoid excessive concurrent requests
     func fetchAllData() {
+        // Fetch today's log immediately as it's the most important
         fetchTodayLog()
         
-        // Stagger secondary fetches slightly to avoid simultaneous requests
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            self.fetchWeekLogs()
-        }
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-            self.fetchAllLogs()
-        }
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            self.calculateStreak()
+        // Use a Task to stagger secondary fetches in a more reliable way
+        Task {
+            // Wait a brief moment for primary fetch to start
+            try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 seconds
+            await MainActor.run { self.fetchWeekLogs() }
+            
+            try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 seconds
+            await MainActor.run { self.fetchAllLogs() }
+            
+            try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 seconds
+            await MainActor.run { self.calculateStreak() }
         }
     }
     
@@ -174,10 +175,8 @@ class WellnessViewModel: ObservableObject {
             try userWellnessRef(uid).setData(from: log) { error in
                 if let error = error {
                     self.errorMessage = error.localizedDescription
-                } else {
-                    // Successfully saved to Firestore, listener will update UI
-                    print("Wellness log created successfully")
                 }
+                // Successfully saved to Firestore, listener will update UI
             }
             // Optimistically update local state for immediate UI feedback
             self.todayLog = log
