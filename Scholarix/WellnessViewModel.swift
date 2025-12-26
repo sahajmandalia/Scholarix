@@ -6,10 +6,15 @@ import Combine
 @MainActor
 class WellnessViewModel: ObservableObject {
     @Published var todayLog: WellnessLog?
+    @Published var weekLogs: [WellnessLog] = []
+    @Published var allLogs: [WellnessLog] = []
+    @Published var currentStreak: Int = 0
     @Published var errorMessage: String?
     
     private var db = Firestore.firestore()
     private var listener: ListenerRegistration?
+    private var weekListener: ListenerRegistration?
+    private var allLogsListener: ListenerRegistration?
     
     // Generates a consistent ID for today (e.g., "2025-12-25")
     private var todayDocId: String {
@@ -21,6 +26,10 @@ class WellnessViewModel: ObservableObject {
     
     private func userWellnessRef(_ uid: String) -> DocumentReference {
         return db.collection("users").document(uid).collection("wellness").document(todayDocId)
+    }
+    
+    private func userWellnessCollection(_ uid: String) -> CollectionReference {
+        return db.collection("users").document(uid).collection("wellness")
     }
     
     func fetchTodayLog() {
@@ -43,6 +52,85 @@ class WellnessViewModel: ObservableObject {
         }
     }
     
+    func fetchWeekLogs() {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        
+        // Calculate date 7 days ago
+        let calendar = Calendar.current
+        guard let weekAgo = calendar.date(byAdding: .day, value: -7, to: Date()) else { return }
+        
+        weekListener?.remove()
+        
+        weekListener = userWellnessCollection(uid)
+            .whereField("date", isGreaterThanOrEqualTo: weekAgo)
+            .addSnapshotListener { snapshot, error in
+                if let error = error {
+                    self.errorMessage = error.localizedDescription
+                    return
+                }
+                
+                self.weekLogs = snapshot?.documents.compactMap {
+                    try? $0.data(as: WellnessLog.self)
+                } ?? []
+            }
+    }
+    
+    func fetchAllLogs() {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        
+        allLogsListener?.remove()
+        
+        allLogsListener = userWellnessCollection(uid)
+            .order(by: "date", descending: true)
+            .limit(to: 30) // Limit to last 30 logs for performance
+            .addSnapshotListener { snapshot, error in
+                if let error = error {
+                    self.errorMessage = error.localizedDescription
+                    return
+                }
+                
+                self.allLogs = snapshot?.documents.compactMap {
+                    try? $0.data(as: WellnessLog.self)
+                } ?? []
+            }
+    }
+    
+    func calculateStreak() {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        
+        userWellnessCollection(uid)
+            .order(by: "date", descending: true)
+            .limit(to: 100)
+            .getDocuments { snapshot, error in
+                guard let documents = snapshot?.documents else {
+                    self.currentStreak = 0
+                    return
+                }
+                
+                let logs = documents.compactMap { try? $0.data(as: WellnessLog.self) }
+                    .sorted { $0.date > $1.date }
+                
+                var streak = 0
+                var checkDate = today
+                
+                for log in logs {
+                    let logDate = calendar.startOfDay(for: log.date)
+                    
+                    if logDate == checkDate {
+                        streak += 1
+                        checkDate = calendar.date(byAdding: .day, value: -1, to: checkDate) ?? checkDate
+                    } else if logDate < checkDate {
+                        break
+                    }
+                }
+                
+                self.currentStreak = streak
+            }
+    }
+    
     func createDay(sleep: Double, mood: String) {
         guard let uid = Auth.auth().currentUser?.uid else { return }
         let log = WellnessLog(
@@ -53,7 +141,13 @@ class WellnessViewModel: ObservableObject {
             mood: mood
         )
         
-        try? userWellnessRef(uid).setData(from: log)
+        do {
+            try userWellnessRef(uid).setData(from: log)
+            // Immediately update local state to ensure UI updates
+            self.todayLog = log
+        } catch {
+            self.errorMessage = error.localizedDescription
+        }
     }
     
     func updateMetric(key: String, value: Any) {
@@ -63,5 +157,7 @@ class WellnessViewModel: ObservableObject {
     
     func detachListener() {
         listener?.remove()
+        weekListener?.remove()
+        allLogsListener?.remove()
     }
 }
