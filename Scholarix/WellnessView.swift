@@ -406,6 +406,8 @@ struct LargeControlCard: View {
     @State private var minusPressed = false
     @State private var plusPressed = false
     
+    private let buttonPressAnimationDuration: Double = 0.1
+    
     var body: some View {
         HStack(spacing: 16) {
             // Icon Background
@@ -458,7 +460,7 @@ struct LargeControlCard: View {
                 Button(action: {
                     minusPressed = true
                     onMinus()
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + buttonPressAnimationDuration) {
                         minusPressed = false
                     }
                 }) {
@@ -477,7 +479,7 @@ struct LargeControlCard: View {
                 Button(action: {
                     plusPressed = true
                     onPlus()
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + buttonPressAnimationDuration) {
                         plusPressed = false
                     }
                 }) {
