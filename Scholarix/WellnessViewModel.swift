@@ -192,11 +192,12 @@ class WellnessViewModel: ObservableObject {
         }
         
         // Update Firestore with error handling
-        userWellnessRef(uid).updateData([
+        // If document doesn't exist, create it with setData merge
+        userWellnessRef(uid).setData([
             "sleepGoal": sleepGoal,
             "waterGoal": waterGoal,
             "exerciseGoal": exerciseGoal
-        ]) { error in
+        ], merge: true) { error in
             if let error = error {
                 self.errorMessage = error.localizedDescription
             }
