@@ -8,10 +8,16 @@ struct WellnessView: View {
     @State private var showingSetup = false
     @State private var showingHistory = false
     @State private var showingMoodDetail = false
+    @State private var showingGoalSettings = false
     
     // Setup Inputs
     @State private var inputSleep = 7.0
     @State private var inputMood = "Content"
+    
+    // Goal Settings
+    @State private var customSleepGoal = 8.0
+    @State private var customWaterGoal = 64
+    @State private var customExerciseGoal = 60
     
     let moods = ["Energized", "Content", "Tired", "Stressed", "Anxious"]
     
@@ -59,21 +65,21 @@ struct WellnessView: View {
                             HStack(spacing: 24) {
                                 ProgressRing(
                                     value: log.sleepHours,
-                                    total: WellnessLog.sleepGoal,
+                                    total: log.effectiveSleepGoal(),
                                     icon: "moon.fill",
                                     color: .purple,
                                     label: "Sleep"
                                 )
                                 ProgressRing(
                                     value: Double(log.waterIntake),
-                                    total: Double(WellnessLog.waterGoal),
+                                    total: Double(log.effectiveWaterGoal()),
                                     icon: "drop.fill",
                                     color: .blue,
                                     label: "Water"
                                 )
                                 ProgressRing(
                                     value: Double(log.exerciseMinutes),
-                                    total: Double(WellnessLog.exerciseGoal),
+                                    total: Double(log.effectiveExerciseGoal()),
                                     icon: "figure.run",
                                     color: .green,
                                     label: "Move"
@@ -133,7 +139,7 @@ struct WellnessView: View {
                                     unit: "oz",
                                     icon: "drop.fill",
                                     color: .blue,
-                                    progress: Double(log.waterIntake) / Double(WellnessLog.waterGoal),
+                                    progress: Double(log.waterIntake) / Double(log.effectiveWaterGoal()),
                                     onMinus: {
                                         let newValue = max(0, log.waterIntake - 8)
                                         viewModel.updateMetric(key: "waterIntake", value: newValue)
@@ -153,7 +159,7 @@ struct WellnessView: View {
                                     unit: "min",
                                     icon: "figure.run",
                                     color: .green,
-                                    progress: Double(log.exerciseMinutes) / Double(WellnessLog.exerciseGoal),
+                                    progress: Double(log.exerciseMinutes) / Double(log.effectiveExerciseGoal()),
                                     onMinus: {
                                         let newValue = max(0, log.exerciseMinutes - 15)
                                         viewModel.updateMetric(key: "exerciseMinutes", value: newValue)
@@ -173,7 +179,7 @@ struct WellnessView: View {
                                     unit: "hrs",
                                     icon: "moon.stars.fill",
                                     color: .purple,
-                                    progress: log.sleepHours / WellnessLog.sleepGoal,
+                                    progress: log.sleepHours / log.effectiveSleepGoal(),
                                     onMinus: {
                                         let newValue = max(0, log.sleepHours - 0.5)
                                         viewModel.updateMetric(key: "sleepHours", value: newValue)
@@ -215,16 +221,27 @@ struct WellnessView: View {
                     }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    NavigationLink(destination: SettingsView()) {
-                        Image(systemName: "gearshape.fill")
-                            .font(.system(size: 18, weight: .semibold))
-                            .foregroundColor(Theme.textPrimary)
+                    HStack(spacing: 12) {
+                        Button(action: { showingGoalSettings = true }) {
+                            Image(systemName: "target")
+                                .font(.system(size: 18, weight: .semibold))
+                                .foregroundColor(Theme.textPrimary)
+                        }
+                        NavigationLink(destination: SettingsView()) {
+                            Image(systemName: "gearshape.fill")
+                                .font(.system(size: 18, weight: .semibold))
+                                .foregroundColor(Theme.textPrimary)
+                        }
                     }
                 }
             }
             // Setup Sheet
             .sheet(isPresented: $showingSetup) {
                 setupSheetView
+            }
+            // Goal Settings Sheet
+            .sheet(isPresented: $showingGoalSettings) {
+                goalSettingsSheetView
             }
             // History Sheet (Pass logs properly)
             .sheet(isPresented: $showingHistory) {
@@ -277,9 +294,9 @@ struct WellnessView: View {
                     .foregroundColor(.white)
                     .padding(.horizontal, 40)
                     .padding(.vertical, 16)
-                    .background(Theme.brandGradient)
+                    .background(Theme.wellnessGradient)
                     .clipShape(Capsule())
-                    .shadow(color: Theme.brandPrimary.opacity(0.4), radius: 10, y: 5)
+                    .shadow(color: Color.green.opacity(0.4), radius: 10, y: 5)
             }
             .padding(.top, 10)
             
@@ -319,9 +336,9 @@ struct WellnessView: View {
                             .foregroundColor(.white)
                             .padding(.horizontal, 30)
                             .padding(.vertical, 16)
-                            .background(Theme.brandGradient)
+                            .background(Theme.wellnessGradient)
                             .clipShape(Capsule())
-                            .shadow(color: Theme.brandPrimary.opacity(0.4), radius: 10, y: 5)
+                            .shadow(color: Color.green.opacity(0.4), radius: 10, y: 5)
                     }
                 }
             }
@@ -374,7 +391,7 @@ struct WellnessView: View {
                         showingSetup = false
                     }) {
                         Text("Save Entry").bold().foregroundColor(.white).frame(maxWidth: .infinity).padding()
-                            .background(Theme.brandGradient).cornerRadius(16)
+                            .background(Theme.wellnessGradient).cornerRadius(16)
                     }
                     .padding(.top, 20)
                 }
@@ -386,6 +403,103 @@ struct WellnessView: View {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { showingSetup = false }
                 }
+            }
+        }
+    }
+    
+    private var goalSettingsSheetView: some View {
+        NavigationView {
+            ScrollView {
+                VStack(spacing: 24) {
+                    Text("Set Your Goals").font(.title2).bold().padding(.top)
+                    
+                    Text("Customize your wellness targets to match your personal health goals.")
+                        .font(.subheadline)
+                        .foregroundColor(Theme.textSecondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
+                    
+                    VStack(alignment: .leading, spacing: 10) {
+                        HStack {
+                            Image(systemName: "moon.stars.fill").foregroundColor(.purple)
+                            Text("Sleep Goal").font(.headline).foregroundColor(Theme.textSecondary)
+                        }
+                        HStack {
+                            Text("\(String(format: "%.1f", customSleepGoal)) hrs").font(.title3).bold()
+                            Spacer()
+                        }
+                        Slider(value: $customSleepGoal, in: 4...12, step: 0.5).tint(.purple)
+                    }
+                    .padding().background(Theme.cardBackground).cornerRadius(16)
+                    
+                    VStack(alignment: .leading, spacing: 10) {
+                        HStack {
+                            Image(systemName: "drop.fill").foregroundColor(.blue)
+                            Text("Water Goal").font(.headline).foregroundColor(Theme.textSecondary)
+                        }
+                        HStack {
+                            Text("\(customWaterGoal) oz").font(.title3).bold()
+                            Spacer()
+                        }
+                        Slider(value: Binding(
+                            get: { Double(customWaterGoal) },
+                            set: { customWaterGoal = Int($0) }
+                        ), in: 32...128, step: 8).tint(.blue)
+                    }
+                    .padding().background(Theme.cardBackground).cornerRadius(16)
+                    
+                    VStack(alignment: .leading, spacing: 10) {
+                        HStack {
+                            Image(systemName: "figure.run").foregroundColor(.green)
+                            Text("Exercise Goal").font(.headline).foregroundColor(Theme.textSecondary)
+                        }
+                        HStack {
+                            Text("\(customExerciseGoal) min").font(.title3).bold()
+                            Spacer()
+                        }
+                        Slider(value: Binding(
+                            get: { Double(customExerciseGoal) },
+                            set: { customExerciseGoal = Int($0) }
+                        ), in: 15...180, step: 15).tint(.green)
+                    }
+                    .padding().background(Theme.cardBackground).cornerRadius(16)
+                    
+                    Button(action: {
+                        HapticManager.notification(type: .success)
+                        viewModel.updateGoals(
+                            sleepGoal: customSleepGoal,
+                            waterGoal: customWaterGoal,
+                            exerciseGoal: customExerciseGoal
+                        )
+                        showingGoalSettings = false
+                    }) {
+                        Text("Save Goals").bold().foregroundColor(.white).frame(maxWidth: .infinity).padding()
+                            .background(
+                                LinearGradient(
+                                    colors: [Color.green, Color.cyan],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .cornerRadius(16)
+                    }
+                    .padding(.top, 20)
+                }
+                .padding()
+            }
+            .background(Theme.backgroundGrouped)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { showingGoalSettings = false }
+                }
+            }
+        }
+        .onAppear {
+            if let log = viewModel.todayLog {
+                customSleepGoal = log.effectiveSleepGoal()
+                customWaterGoal = log.effectiveWaterGoal()
+                customExerciseGoal = log.effectiveExerciseGoal()
             }
         }
     }
@@ -569,7 +683,11 @@ struct InsightCard: View {
     }
     
     var insightText: String {
-        let score = (log.sleepHours >= 7 ? 1 : 0) + (log.waterIntake >= 40 ? 1 : 0) + (log.exerciseMinutes >= 30 ? 1 : 0)
+        let sleepGoalMet = log.sleepHours >= log.effectiveSleepGoal()
+        let waterGoalMet = log.waterIntake >= log.effectiveWaterGoal()
+        let exerciseGoalMet = log.exerciseMinutes >= log.effectiveExerciseGoal()
+        let score = (sleepGoalMet ? 1 : 0) + (waterGoalMet ? 1 : 0) + (exerciseGoalMet ? 1 : 0)
+        
         if score == 3 { return "You're crushing it! All goals met." }
         if score == 2 { return "Great job! Just one goal left." }
         return "Keep going! Small steps count."

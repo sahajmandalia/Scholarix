@@ -18,6 +18,13 @@ struct Theme {
         endPoint: .bottomTrailing
     )
     
+    // Wellness Hub Gradient (Green to Light Blue)
+    static let wellnessGradient = LinearGradient(
+        gradient: Gradient(colors: [Color.green, Color.cyan]),
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+    )
+    
     // MARK: - Semantic Colors (Status & Feedback)
     static let success = Color("Success", fallback: Color(red: 0.2, green: 0.78, blue: 0.35)) // Green
     static let warning = Color("Warning", fallback: Color(red: 1.0, green: 0.58, blue: 0.0)) // Orange

@@ -9,8 +9,26 @@ struct WellnessLog: Identifiable, Codable {
     var exerciseMinutes: Int
     var mood: String
     
-    // Default Goals
-    static let sleepGoal: Double = 8.0
-    static let waterGoal: Int = 64
-    static let exerciseGoal: Int = 60
+    // Custom Goals (per user)
+    var sleepGoal: Double?
+    var waterGoal: Int?
+    var exerciseGoal: Int?
+    
+    // Default Goals (used when custom goals not set)
+    static let defaultSleepGoal: Double = 8.0
+    static let defaultWaterGoal: Int = 64
+    static let defaultExerciseGoal: Int = 60
+    
+    // Helper methods to get effective goals
+    func effectiveSleepGoal() -> Double {
+        return sleepGoal ?? WellnessLog.defaultSleepGoal
+    }
+    
+    func effectiveWaterGoal() -> Int {
+        return waterGoal ?? WellnessLog.defaultWaterGoal
+    }
+    
+    func effectiveExerciseGoal() -> Int {
+        return exerciseGoal ?? WellnessLog.defaultExerciseGoal
+    }
 }
