@@ -56,7 +56,7 @@ struct WellnessView: View {
                         
                         if let log = viewModel.todayLog {
                             // --- 2. PROGRESS RINGS ROW ---
-                            HStack(spacing: 20) {
+                            HStack(spacing: 24) {
                                 ProgressRing(
                                     value: log.sleepHours,
                                     total: WellnessLog.sleepGoal,
@@ -79,11 +79,11 @@ struct WellnessView: View {
                                     label: "Move"
                                 )
                             }
-                            .padding(.vertical, 24)
+                            .padding(.vertical, 28)
                             .frame(maxWidth: .infinity)
                             .background(Theme.cardBackground)
                             .cornerRadius(24)
-                            .shadow(color: Theme.shadowLight, radius: 10, y: 5)
+                            .shadow(color: Theme.shadowLight, radius: 12, y: 6)
                             .padding(.horizontal, 20)
                             
                             // --- 3. MOOD CARD ---
@@ -93,17 +93,18 @@ struct WellnessView: View {
                             }) {
                                 HStack(spacing: 16) {
                                     Text(log.mood.wellnessMoodEmoji())
-                                        .font(.system(size: 44))
-                                        .padding(10)
+                                        .font(.system(size: 48))
+                                        .padding(12)
                                         .background(Theme.backgroundGrouped)
                                         .clipShape(Circle())
                                     
-                                    VStack(alignment: .leading, spacing: 4) {
+                                    VStack(alignment: .leading, spacing: 6) {
                                         Text("Current Mood")
                                             .font(.caption)
                                             .fontWeight(.bold)
                                             .foregroundColor(Theme.textSecondary)
                                             .textCase(.uppercase)
+                                            .tracking(0.5)
                                         
                                         Text(log.mood)
                                             .font(.title3)
@@ -112,18 +113,19 @@ struct WellnessView: View {
                                     }
                                     Spacer()
                                     Image(systemName: "chevron.right")
+                                        .font(.system(size: 14, weight: .semibold))
                                         .foregroundColor(Theme.textSecondary)
                                 }
-                                .padding(16)
+                                .padding(18)
                                 .background(Theme.cardBackground)
                                 .cornerRadius(20)
-                                .shadow(color: Theme.shadowLight, radius: 8, y: 4)
+                                .shadow(color: Theme.shadowLight, radius: 10, y: 5)
                             }
                             .buttonStyle(.plain)
                             .padding(.horizontal, 20)
                             
                             // --- 4. TRACKING CONTROLS ---
-                            VStack(spacing: 16) {
+                            VStack(spacing: 18) {
                                 // Water
                                 LargeControlCard(
                                     title: "Hydration",
@@ -401,73 +403,101 @@ struct LargeControlCard: View {
     let onMinus: () -> Void
     let onPlus: () -> Void
     
+    @State private var minusPressed = false
+    @State private var plusPressed = false
+    
     var body: some View {
         HStack(spacing: 16) {
             // Icon Background
             ZStack {
-                Circle().fill(color.opacity(0.15)).frame(width: 56, height: 56)
+                Circle()
+                    .fill(color.opacity(0.15))
+                    .frame(width: 60, height: 60)
                 Image(systemName: icon)
-                    .font(.system(size: 24, weight: .bold))
+                    .font(.system(size: 26, weight: .bold))
                     .foregroundColor(color)
             }
             
             // Text & Progress
-            VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .leading, spacing: 8) {
                 Text(title.uppercased())
                     .font(.caption)
                     .fontWeight(.bold)
                     .foregroundColor(Theme.textSecondary)
-                    .tracking(0.5)
+                    .tracking(0.8)
                 
-                HStack(alignment: .lastTextBaseline, spacing: 2) {
-                    Text(value).font(.system(.title2, design: .rounded)).fontWeight(.bold).foregroundColor(Theme.textPrimary)
-                    Text(unit).font(.caption).fontWeight(.semibold).foregroundColor(Theme.textSecondary)
+                HStack(alignment: .lastTextBaseline, spacing: 4) {
+                    Text(value)
+                        .font(.system(.title2, design: .rounded))
+                        .fontWeight(.bold)
+                        .foregroundColor(Theme.textPrimary)
+                    Text(unit)
+                        .font(.caption)
+                        .fontWeight(.semibold)
+                        .foregroundColor(Theme.textSecondary)
                 }
                 
-                // Bar
+                // Progress Bar
                 GeometryReader { geo in
                     ZStack(alignment: .leading) {
-                        Capsule().fill(color.opacity(0.15))
-                        Capsule().fill(color).frame(width: geo.size.width * min(progress, 1.0))
-                            .animation(.spring(response: 0.5, dampingFraction: 0.6), value: progress)
+                        Capsule()
+                            .fill(color.opacity(0.15))
+                        Capsule()
+                            .fill(color)
+                            .frame(width: geo.size.width * min(progress, 1.0))
+                            .animation(.spring(response: 0.5, dampingFraction: 0.7), value: progress)
                     }
                 }
-                .frame(height: 6)
+                .frame(height: 8)
             }
             
             Spacer()
             
-            // Buttons
-            HStack(spacing: 12) {
-                Button(action: onMinus) {
+            // Control Buttons
+            HStack(spacing: 10) {
+                Button(action: {
+                    minusPressed = true
+                    onMinus()
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        minusPressed = false
+                    }
+                }) {
                     Image(systemName: "minus")
                         .font(.system(size: 18, weight: .bold))
-                        .foregroundColor(Theme.textPrimary)
-                        .frame(width: 40, height: 40)
+                        .foregroundColor(minusPressed ? color : Theme.textPrimary)
+                        .frame(width: 44, height: 44)
                         .background(Theme.backgroundGrouped)
                         .clipShape(Circle())
-                        .shadow(color: Color.black.opacity(0.05), radius: 2, y: 1)
-                        .contentShape(Rectangle()) // Ensures tap area is solid
+                        .shadow(color: Theme.shadowLight, radius: 4, y: 2)
+                        .scaleEffect(minusPressed ? 0.95 : 1.0)
+                        .animation(.spring(response: 0.3, dampingFraction: 0.6), value: minusPressed)
                 }
                 .buttonStyle(.plain)
                 
-                Button(action: onPlus) {
+                Button(action: {
+                    plusPressed = true
+                    onPlus()
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        plusPressed = false
+                    }
+                }) {
                     Image(systemName: "plus")
                         .font(.system(size: 18, weight: .bold))
                         .foregroundColor(.white)
-                        .frame(width: 40, height: 40)
+                        .frame(width: 44, height: 44)
                         .background(color)
                         .clipShape(Circle())
-                        .shadow(color: color.opacity(0.3), radius: 4, y: 2)
-                        .contentShape(Rectangle()) // Ensures tap area is solid
+                        .shadow(color: color.opacity(0.4), radius: 5, y: 3)
+                        .scaleEffect(plusPressed ? 0.95 : 1.0)
+                        .animation(.spring(response: 0.3, dampingFraction: 0.6), value: plusPressed)
                 }
                 .buttonStyle(.plain)
             }
         }
-        .padding(16)
+        .padding(18)
         .background(Theme.cardBackground)
         .cornerRadius(20)
-        .shadow(color: Theme.shadowLight, radius: 8, y: 4)
+        .shadow(color: Theme.shadowLight, radius: 10, y: 5)
     }
 }
 
@@ -480,18 +510,24 @@ struct ProgressRing: View {
     var progress: Double { min(value / max(total, 1), 1.0) }
     
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 10) {
             ZStack {
-                Circle().stroke(color.opacity(0.15), lineWidth: 8)
-                Circle().trim(from: 0, to: progress)
+                Circle()
+                    .stroke(color.opacity(0.15), lineWidth: 8)
+                Circle()
+                    .trim(from: 0, to: progress)
                     .stroke(color, style: StrokeStyle(lineWidth: 8, lineCap: .round))
                     .rotationEffect(.degrees(-90))
                     .animation(.spring(response: 0.6, dampingFraction: 0.7), value: progress)
-                Image(systemName: icon).foregroundColor(color).font(.system(size: 20))
+                Image(systemName: icon)
+                    .foregroundColor(color)
+                    .font(.system(size: 22, weight: .semibold))
             }
-            .frame(width: 80, height: 80)
+            .frame(width: 84, height: 84)
             
-            Text(label).font(.system(size: 12, weight: .bold)).foregroundColor(Theme.textSecondary)
+            Text(label)
+                .font(.system(size: 13, weight: .bold))
+                .foregroundColor(Theme.textSecondary)
         }
     }
 }
@@ -499,18 +535,35 @@ struct ProgressRing: View {
 struct InsightCard: View {
     let log: WellnessLog
     var body: some View {
-        HStack(alignment: .top, spacing: 12) {
-            Image(systemName: "sparkles").foregroundColor(.yellow).font(.title3)
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Daily Insight").font(.caption).fontWeight(.bold).foregroundColor(Theme.textSecondary).textCase(.uppercase)
-                Text(insightText).font(.subheadline).fontWeight(.medium).foregroundColor(Theme.textPrimary)
+        HStack(alignment: .top, spacing: 14) {
+            ZStack {
+                Circle()
+                    .fill(Color.yellow.opacity(0.15))
+                    .frame(width: 40, height: 40)
+                Image(systemName: "sparkles")
+                    .foregroundColor(.yellow)
+                    .font(.system(size: 18, weight: .semibold))
+            }
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Daily Insight")
+                    .font(.caption)
+                    .fontWeight(.bold)
+                    .foregroundColor(Theme.textSecondary)
+                    .textCase(.uppercase)
+                    .tracking(0.5)
+                Text(insightText)
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                    .foregroundColor(Theme.textPrimary)
+                    .lineSpacing(2)
             }
             Spacer()
         }
-        .padding(16)
+        .padding(18)
         .background(Theme.cardBackground)
-        .cornerRadius(18)
-        .shadow(color: Theme.shadowLight, radius: 8, y: 4)
+        .cornerRadius(20)
+        .shadow(color: Theme.shadowLight, radius: 10, y: 5)
     }
     
     var insightText: String {
