@@ -191,12 +191,16 @@ class WellnessViewModel: ObservableObject {
             self.todayLog = currentLog
         }
         
-        // Update Firestore
+        // Update Firestore with error handling
         userWellnessRef(uid).updateData([
             "sleepGoal": sleepGoal,
             "waterGoal": waterGoal,
             "exerciseGoal": exerciseGoal
-        ])
+        ]) { error in
+            if let error = error {
+                self.errorMessage = error.localizedDescription
+            }
+        }
     }
     
     func updateMetric(key: String, value: Any) {

@@ -474,13 +474,7 @@ struct WellnessView: View {
                         showingGoalSettings = false
                     }) {
                         Text("Save Goals").bold().foregroundColor(.white).frame(maxWidth: .infinity).padding()
-                            .background(
-                                LinearGradient(
-                                    colors: [Color.green, Color.cyan],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
+                            .background(Theme.wellnessGradient)
                             .cornerRadius(16)
                     }
                     .padding(.top, 20)
