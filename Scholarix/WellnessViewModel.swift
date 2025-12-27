@@ -182,6 +182,29 @@ class WellnessViewModel: ObservableObject {
     
     func updateMetric(key: String, value: Any) {
         guard let uid = Auth.auth().currentUser?.uid else { return }
+        
+        // Optimistically update the local state for immediate UI feedback
+        if var currentLog = todayLog {
+            switch key {
+            case "waterIntake":
+                if let intValue = value as? Int {
+                    currentLog.waterIntake = intValue
+                }
+            case "exerciseMinutes":
+                if let intValue = value as? Int {
+                    currentLog.exerciseMinutes = intValue
+                }
+            case "sleepHours":
+                if let doubleValue = value as? Double {
+                    currentLog.sleepHours = doubleValue
+                }
+            default:
+                break
+            }
+            self.todayLog = currentLog
+        }
+        
+        // Update Firestore - the listener will sync any changes
         userWellnessRef(uid).updateData([key: value])
     }
     
