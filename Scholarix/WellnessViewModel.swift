@@ -180,6 +180,30 @@ class WellnessViewModel: ObservableObject {
         }
     }
     
+    func updateGoals(sleepGoal: Double, waterGoal: Int, exerciseGoal: Int) {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        
+        // Update the current log with new goals
+        if var currentLog = todayLog {
+            currentLog.sleepGoal = sleepGoal
+            currentLog.waterGoal = waterGoal
+            currentLog.exerciseGoal = exerciseGoal
+            self.todayLog = currentLog
+        }
+        
+        // Update Firestore with error handling
+        // If document doesn't exist, create it with setData merge
+        userWellnessRef(uid).setData([
+            "sleepGoal": sleepGoal,
+            "waterGoal": waterGoal,
+            "exerciseGoal": exerciseGoal
+        ], merge: true) { error in
+            if let error = error {
+                self.errorMessage = error.localizedDescription
+            }
+        }
+    }
+    
     func updateMetric(key: String, value: Any) {
         guard let uid = Auth.auth().currentUser?.uid else { return }
         
