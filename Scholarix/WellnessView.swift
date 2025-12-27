@@ -9,6 +9,7 @@ struct WellnessView: View {
     @State private var showingHistory = false
     @State private var showingMoodDetail = false
     @State private var showingGoalSettings = false
+    @State private var hasShownGoalSettings = false
     
     // Setup Inputs
     @State private var inputSleep = 7.0
@@ -16,7 +17,7 @@ struct WellnessView: View {
     
     // Goal Settings
     @State private var customSleepGoal = 8.0
-    @State private var customWaterGoal = 64
+    @State private var customWaterGoal = 8 // Changed to cups (was 64 oz)
     @State private var customExerciseGoal = 60
     
     let moods = ["Energized", "Content", "Tired", "Stressed", "Anxious"]
@@ -46,15 +47,20 @@ struct WellnessView: View {
                             }
                             Spacer()
                             
-                            // History Button
-                            Button(action: { showingHistory = true }) {
-                                Image(systemName: "clock.arrow.circlepath")
-                                    .font(.system(size: 20, weight: .semibold))
-                                    .foregroundColor(Theme.brandPrimary)
-                                    .padding(10)
-                                    .background(Theme.cardBackground)
-                                    .clipShape(Circle())
-                                    .shadow(color: Theme.shadowLight, radius: 5, y: 2)
+                            // Goals Button (moved from toolbar, more prominent)
+                            Button(action: { showingGoalSettings = true }) {
+                                HStack(spacing: 6) {
+                                    Image(systemName: "target")
+                                        .font(.system(size: 16, weight: .semibold))
+                                    Text("Goals")
+                                        .font(.system(size: 15, weight: .semibold))
+                                }
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 10)
+                                .background(Theme.wellnessGradient)
+                                .clipShape(Capsule())
+                                .shadow(color: Color.green.opacity(0.3), radius: 5, y: 2)
                             }
                         }
                         .padding(.horizontal, 24)
@@ -132,27 +138,27 @@ struct WellnessView: View {
                             
                             // --- 4. TRACKING CONTROLS ---
                             VStack(spacing: 18) {
-                                // Water
+                                // Water (changed to cups)
                                 LargeControlCard(
                                     title: "Hydration",
-                                    value: "\(log.waterIntake)",
-                                    unit: "oz",
+                                    value: "\(log.waterIntake / 8)", // Convert oz to cups
+                                    unit: "cups",
                                     icon: "drop.fill",
                                     color: .blue,
                                     progress: Double(log.waterIntake) / Double(log.effectiveWaterGoal()),
                                     onMinus: {
-                                        let newValue = max(0, log.waterIntake - 8)
+                                        let newValue = max(0, log.waterIntake - 8) // 1 cup = 8 oz
                                         viewModel.updateMetric(key: "waterIntake", value: newValue)
                                         HapticManager.selection()
                                     },
                                     onPlus: {
-                                        let newValue = log.waterIntake + 8
+                                        let newValue = log.waterIntake + 8 // 1 cup = 8 oz
                                         viewModel.updateMetric(key: "waterIntake", value: newValue)
                                         HapticManager.selection()
                                     }
                                 )
                                 
-                                // Exercise
+                                // Exercise (changed increment to 10)
                                 LargeControlCard(
                                     title: "Exercise",
                                     value: "\(log.exerciseMinutes)",
@@ -161,12 +167,12 @@ struct WellnessView: View {
                                     color: .green,
                                     progress: Double(log.exerciseMinutes) / Double(log.effectiveExerciseGoal()),
                                     onMinus: {
-                                        let newValue = max(0, log.exerciseMinutes - 15)
+                                        let newValue = max(0, log.exerciseMinutes - 10) // Changed from 15 to 10
                                         viewModel.updateMetric(key: "exerciseMinutes", value: newValue)
                                         HapticManager.selection()
                                     },
                                     onPlus: {
-                                        let newValue = log.exerciseMinutes + 15
+                                        let newValue = log.exerciseMinutes + 10 // Changed from 15 to 10
                                         viewModel.updateMetric(key: "exerciseMinutes", value: newValue)
                                         HapticManager.selection()
                                     }
@@ -222,8 +228,9 @@ struct WellnessView: View {
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     HStack(spacing: 12) {
-                        Button(action: { showingGoalSettings = true }) {
-                            Image(systemName: "target")
+                        // History button moved here from header
+                        Button(action: { showingHistory = true }) {
+                            Image(systemName: "clock.arrow.circlepath")
                                 .font(.system(size: 18, weight: .semibold))
                                 .foregroundColor(Theme.textPrimary)
                         }
@@ -255,7 +262,17 @@ struct WellnessView: View {
                     Text("You are feeling \(log.mood) today.\nKeep tracking to see patterns!")
                 }
             }
-            .onAppear { viewModel.fetchTodayLog() }
+            .onAppear {
+                viewModel.fetchTodayLog()
+                
+                // Show goal settings on first launch
+                if !hasShownGoalSettings && !UserDefaults.standard.bool(forKey: "hasSetWellnessGoals") {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        hasShownGoalSettings = true
+                        showingGoalSettings = true
+                    }
+                }
+            }
             .onDisappear { viewModel.detachListener() }
         }
     }
@@ -329,18 +346,8 @@ struct WellnessView: View {
                             .clipShape(Capsule())
                             .shadow(radius: 5)
                     }
-                } else {
-                    Button(action: { showingSetup = true }) {
-                        Label("Log Today", systemImage: "plus")
-                            .font(.headline)
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 30)
-                            .padding(.vertical, 16)
-                            .background(Theme.wellnessGradient)
-                            .clipShape(Capsule())
-                            .shadow(color: Color.green.opacity(0.4), radius: 10, y: 5)
-                    }
                 }
+                // Removed "Log Today" button - "Start Day" button serves this purpose
             }
             .padding(.horizontal, 24)
             .padding(.bottom, 24)
@@ -438,13 +445,13 @@ struct WellnessView: View {
                             Text("Water Goal").font(.headline).foregroundColor(Theme.textSecondary)
                         }
                         HStack {
-                            Text("\(customWaterGoal) oz").font(.title3).bold()
+                            Text("\(customWaterGoal) cups").font(.title3).bold() // Changed from oz to cups
                             Spacer()
                         }
                         Slider(value: Binding(
                             get: { Double(customWaterGoal) },
                             set: { customWaterGoal = Int($0) }
-                        ), in: 32...128, step: 8).tint(.blue)
+                        ), in: 4...16, step: 1).tint(.blue) // Changed range to 4-16 cups (32-128 oz)
                     }
                     .padding().background(Theme.cardBackground).cornerRadius(16)
                     
@@ -460,17 +467,20 @@ struct WellnessView: View {
                         Slider(value: Binding(
                             get: { Double(customExerciseGoal) },
                             set: { customExerciseGoal = Int($0) }
-                        ), in: 15...180, step: 15).tint(.green)
+                        ), in: 10...180, step: 10).tint(.green) // Changed step from 15 to 10
                     }
                     .padding().background(Theme.cardBackground).cornerRadius(16)
                     
                     Button(action: {
                         HapticManager.notification(type: .success)
+                        // Convert cups to oz for storage
                         viewModel.updateGoals(
                             sleepGoal: customSleepGoal,
-                            waterGoal: customWaterGoal,
+                            waterGoal: customWaterGoal * 8, // Convert cups to oz
                             exerciseGoal: customExerciseGoal
                         )
+                        // Mark that goals have been set
+                        UserDefaults.standard.set(true, forKey: "hasSetWellnessGoals")
                         showingGoalSettings = false
                     }) {
                         Text("Save Goals").bold().foregroundColor(.white).frame(maxWidth: .infinity).padding()
@@ -492,7 +502,7 @@ struct WellnessView: View {
         .onAppear {
             if let log = viewModel.todayLog {
                 customSleepGoal = log.effectiveSleepGoal()
-                customWaterGoal = log.effectiveWaterGoal()
+                customWaterGoal = log.effectiveWaterGoal() / 8 // Convert oz to cups
                 customExerciseGoal = log.effectiveExerciseGoal()
             }
         }
@@ -513,8 +523,12 @@ struct LargeControlCard: View {
     
     @State private var minusPressed = false
     @State private var plusPressed = false
+    @State private var minusTimer: Timer?
+    @State private var plusTimer: Timer?
     
     private let buttonPressAnimationDuration: Double = 0.1
+    private let holdRepeatInterval: TimeInterval = 0.15 // How often to repeat when holding
+    private let holdStartDelay: TimeInterval = 0.5 // How long before hold starts repeating
     
     var body: some View {
         HStack(spacing: 16) {
@@ -565,43 +579,75 @@ struct LargeControlCard: View {
             
             // Control Buttons
             HStack(spacing: 10) {
-                Button(action: {
-                    minusPressed = true
-                    onMinus()
-                    DispatchQueue.main.asyncAfter(deadline: .now() + buttonPressAnimationDuration) {
-                        minusPressed = false
-                    }
-                }) {
-                    Image(systemName: "minus")
-                        .font(.system(size: 18, weight: .bold))
-                        .foregroundColor(minusPressed ? color : Theme.textPrimary)
-                        .frame(width: 44, height: 44)
-                        .background(Theme.backgroundGrouped)
-                        .clipShape(Circle())
-                        .shadow(color: Theme.shadowLight, radius: 4, y: 2)
-                        .scaleEffect(minusPressed ? 0.95 : 1.0)
-                        .animation(.spring(response: 0.3, dampingFraction: 0.6), value: minusPressed)
-                }
-                .buttonStyle(.plain)
+                // Minus Button with Long Press
+                Image(systemName: "minus")
+                    .font(.system(size: 18, weight: .bold))
+                    .foregroundColor(minusPressed ? color : Theme.textPrimary)
+                    .frame(width: 44, height: 44)
+                    .background(Theme.backgroundGrouped)
+                    .clipShape(Circle())
+                    .shadow(color: Theme.shadowLight, radius: 4, y: 2)
+                    .scaleEffect(minusPressed ? 0.95 : 1.0)
+                    .animation(.spring(response: 0.3, dampingFraction: 0.6), value: minusPressed)
+                    .gesture(
+                        DragGesture(minimumDistance: 0)
+                            .onChanged { _ in
+                                if !minusPressed {
+                                    minusPressed = true
+                                    onMinus()
+                                    HapticManager.selection()
+                                    
+                                    // Start timer after initial delay
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + holdStartDelay) {
+                                        if minusPressed {
+                                            minusTimer = Timer.scheduledTimer(withTimeInterval: holdRepeatInterval, repeats: true) { _ in
+                                                onMinus()
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            .onEnded { _ in
+                                minusPressed = false
+                                minusTimer?.invalidate()
+                                minusTimer = nil
+                            }
+                    )
                 
-                Button(action: {
-                    plusPressed = true
-                    onPlus()
-                    DispatchQueue.main.asyncAfter(deadline: .now() + buttonPressAnimationDuration) {
-                        plusPressed = false
-                    }
-                }) {
-                    Image(systemName: "plus")
-                        .font(.system(size: 18, weight: .bold))
-                        .foregroundColor(.white)
-                        .frame(width: 44, height: 44)
-                        .background(color)
-                        .clipShape(Circle())
-                        .shadow(color: color.opacity(0.4), radius: 5, y: 3)
-                        .scaleEffect(plusPressed ? 0.95 : 1.0)
-                        .animation(.spring(response: 0.3, dampingFraction: 0.6), value: plusPressed)
-                }
-                .buttonStyle(.plain)
+                // Plus Button with Long Press
+                Image(systemName: "plus")
+                    .font(.system(size: 18, weight: .bold))
+                    .foregroundColor(.white)
+                    .frame(width: 44, height: 44)
+                    .background(color)
+                    .clipShape(Circle())
+                    .shadow(color: color.opacity(0.4), radius: 5, y: 3)
+                    .scaleEffect(plusPressed ? 0.95 : 1.0)
+                    .animation(.spring(response: 0.3, dampingFraction: 0.6), value: plusPressed)
+                    .gesture(
+                        DragGesture(minimumDistance: 0)
+                            .onChanged { _ in
+                                if !plusPressed {
+                                    plusPressed = true
+                                    onPlus()
+                                    HapticManager.selection()
+                                    
+                                    // Start timer after initial delay
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + holdStartDelay) {
+                                        if plusPressed {
+                                            plusTimer = Timer.scheduledTimer(withTimeInterval: holdRepeatInterval, repeats: true) { _ in
+                                                onPlus()
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            .onEnded { _ in
+                                plusPressed = false
+                                plusTimer?.invalidate()
+                                plusTimer = nil
+                            }
+                    )
             }
         }
         .padding(18)
