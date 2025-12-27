@@ -594,8 +594,7 @@ struct LargeControlCard: View {
                             .onChanged { _ in
                                 if !minusPressed {
                                     minusPressed = true
-                                    onMinus()
-                                    HapticManager.selection()
+                                    onMinus() // This already calls HapticManager.selection()
                                     
                                     // Start timer after initial delay
                                     DispatchQueue.main.asyncAfter(deadline: .now() + holdStartDelay) {
@@ -629,8 +628,7 @@ struct LargeControlCard: View {
                             .onChanged { _ in
                                 if !plusPressed {
                                     plusPressed = true
-                                    onPlus()
-                                    HapticManager.selection()
+                                    onPlus() // This already calls HapticManager.selection()
                                     
                                     // Start timer after initial delay
                                     DispatchQueue.main.asyncAfter(deadline: .now() + holdStartDelay) {
