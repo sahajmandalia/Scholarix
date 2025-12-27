@@ -23,7 +23,7 @@ struct AddCourseView: View {
         NavigationView {
             ZStack(alignment: .bottom) {
                 // Background
-                Theme.backgroundGrouped.ignoresSafeArea()
+                Color(.systemGray6).ignoresSafeArea()
                 
                 ScrollView {
                     VStack(spacing: 20) { // Increased spacing for breathability

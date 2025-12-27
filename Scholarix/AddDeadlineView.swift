@@ -28,12 +28,8 @@ struct AddDeadlineView: View {
         NavigationView {
             ZStack(alignment: .bottom) {
                 // --- PREMIUM BACKGROUND ---
-                LinearGradient(
-                    colors: [Color.cyan.opacity(0.05), Color.blue.opacity(0.05)],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-                .ignoresSafeArea()
+                Color(.systemGray6)
+                    .ignoresSafeArea()
                 
                 ScrollView {
                     VStack(spacing: 20) {

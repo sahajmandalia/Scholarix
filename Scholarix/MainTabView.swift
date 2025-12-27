@@ -30,24 +30,6 @@ struct MainTabView: View {
                     }
                 }
                 .tag(1)
-            
-            // Hub 3: AI Coach (Coming Soon)
-            ComingSoonView(
-                icon: "brain.head.profile",
-                title: "AI Coach",
-                subtitle: "Get personalized study tips",
-                color: .purple
-            )
-            .tabItem {
-                Label {
-                    Text("AI Coach")
-                        .font(.system(.caption, design: .rounded))
-                } icon: {
-                    Image(systemName: "sparkles")
-                }
-            }
-            .tag(2)
-            
             // Hub 4: Extracurriculars
             ExtracurricularsView()
                 .tabItem {

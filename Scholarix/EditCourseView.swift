@@ -32,8 +32,7 @@ struct EditCourseView: View {
     var body: some View {
         ZStack(alignment: .bottom) {
             // Background
-            LinearGradient(colors: [Color.orange.opacity(0.05), Color.red.opacity(0.05)], startPoint: .topLeading, endPoint: .bottomTrailing)
-                .ignoresSafeArea()
+            Color(.systemGray6).ignoresSafeArea()
             
             ScrollView {
                 VStack(spacing: 20) {

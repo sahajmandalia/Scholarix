@@ -212,9 +212,6 @@ struct WellnessView: View {
                     }
                     .padding(.bottom, 120) // Space for bottom bar
                 }
-                
-                // --- BOTTOM FLOATING BAR ---
-                bottomActionBar
             }
             .navigationTitle("Wellness")
             .navigationBarTitleDisplayMode(.inline)
@@ -320,38 +317,6 @@ struct WellnessView: View {
             Spacer()
         }
         .padding(.vertical, 30)
-    }
-    
-    var bottomActionBar: some View {
-        VStack(spacing: 0) {
-            Spacer()
-            LinearGradient(colors: [Theme.backgroundGrouped.opacity(0), Theme.backgroundGrouped], startPoint: .top, endPoint: .bottom)
-                .frame(height: 30)
-                .allowsHitTesting(false)
-            
-            HStack {
-                Spacer()
-                if viewModel.todayLog != nil {
-                    Button(action: {
-                        inputSleep = viewModel.todayLog?.sleepHours ?? 7.0
-                        inputMood = viewModel.todayLog?.mood ?? "Content"
-                        showingSetup = true
-                    }) {
-                        Label("Edit Entry", systemImage: "pencil")
-                            .font(.headline)
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 24)
-                            .padding(.vertical, 14)
-                            .background(Color.black.opacity(0.7))
-                            .clipShape(Capsule())
-                            .shadow(radius: 5)
-                    }
-                }
-                // Removed "Log Today" button - "Start Day" button serves this purpose
-            }
-            .padding(.horizontal, 24)
-            .padding(.bottom, 24)
-        }
     }
     
     private var setupSheetView: some View {
